@@ -1,0 +1,19 @@
+{
+  "name": "클리노미터 - 주향/경사 측정기",
+  "short_name": "클리노미터",
+  "description": "스마트폰 센서로 주향과 경사를 측정하는 웹 클리노미터",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

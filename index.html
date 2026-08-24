@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>클리노미터 - 주향/경사 측정기</title>
+<meta name="theme-color" content="#0f172a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./icons/icon.svg" />
+<link rel="icon" href="./icons/icon.svg" />
+<link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+
+<!-- 시작 화면 -->
+<section id="start-screen" class="screen">
+  <h1>클리노미터</h1>
+  <p class="lead">
+    스마트폰을 나침반 겸 경사계로 사용해 암반면의 <b>주향(走向)</b>과 <b>경사(傾斜)</b>를 측정합니다.
+    측정을 시작하면 나침반·기울기 센서 사용 권한을 요청합니다.
+  </p>
+  <button id="start-btn" class="big-button">측정 시작</button>
+  <div id="insecure-warning" class="warning-banner hidden">
+    이 페이지가 HTTPS로 접속되지 않아 센서 권한을 사용할 수 없습니다. GitHub Pages로 배포된 https:// 주소로 접속해주세요.
+  </div>
+  <div id="permission-denied" class="warning-banner hidden">
+    센서 권한이 거부되었습니다. 브라우저 설정에서 동작 및 방향 센서 권한을 허용한 뒤 새로고침해주세요.
+  </div>
+</section>
+
+<!-- 측정 화면 -->
+<section id="main-screen" class="screen hidden">
+  <h1>클리노미터</h1>
+
+  <div id="calibration-banner" class="warning-banner hidden">
+    나침반 정확도가 낮습니다. 스마트폰을 8자(∞) 모양으로 흔들어 보정한 뒤 다시 시도하세요. 금속·자성 광물 근처에서는 오차가 커질 수 있습니다.
+  </div>
+
+  <div class="step-indicator">
+    <div class="step" data-step="strike">① 수평 맞추고<br>주향 기록</div>
+    <div class="step" data-step="dip">② 90도 돌려서<br>경사 기록</div>
+    <div class="step" data-step="review">③ 확인 후 저장</div>
+  </div>
+
+  <div class="compass-wrap">
+    <svg width="200" height="200" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="90" fill="#0b1220" stroke="#2a3a5c" stroke-width="2" />
+      <text class="compass-label" x="100" y="20">N</text>
+      <text class="compass-label" x="184" y="105">E</text>
+      <text class="compass-label" x="100" y="188">S</text>
+      <text class="compass-label" x="16" y="105">W</text>
+      <circle cx="100" cy="100" r="4" fill="#e2e8f0" />
+      <g id="strike-group">
+        <line x1="100" y1="14" x2="100" y2="186" stroke="#f97316" stroke-width="5" stroke-linecap="round" />
+      </g>
+      <g id="dip-tick-group" class="hidden">
+        <line x1="100" y1="14" x2="100" y2="26" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" />
+      </g>
+    </svg>
+  </div>
+  <p class="readout-sub" style="text-align:center;">
+    현재 방위: <span id="heading-readout">--</span>
+  </p>
+
+  <div id="strike-panel">
+    <div class="level-panel">
+      <div class="level-title">좌우 수평계 (수평이 되면 초록색)</div>
+      <div class="level-track">
+        <div class="level-center-mark"></div>
+        <div id="level-ball" class="level-ball"></div>
+      </div>
+      <div id="level-status" class="level-status">기기를 좌우로 기울여 수평을 맞추세요.</div>
+    </div>
+    <button id="capture-strike-btn" class="big-button" disabled>① 주향 기록</button>
+  </div>
+
+  <div id="dip-panel" class="hidden">
+    <div class="readout-panel">
+      <div class="readout-value" id="dip-readout">0°</div>
+      <div class="readout-sub">경사 각도 (좌우 기울기)</div>
+    </div>
+    <button id="capture-dip-btn" class="big-button" disabled>② 경사 기록</button>
+    <button id="back-to-strike-btn" class="secondary-button">① 주향 다시 측정</button>
+  </div>
+
+  <div id="review-panel" class="hidden">
+    <div class="summary-panel">
+      <div class="summary-row"><span class="label">주향</span><span class="value" id="summary-strike">--</span></div>
+      <div class="summary-row"><span class="label">경사</span><span class="value" id="summary-dip">--</span></div>
+      <div class="summary-row"><span class="label">경사 방향</span><span class="value" id="summary-dipdir">--</span></div>
+    </div>
+    <textarea id="note-input" placeholder="메모 (지점명, 암종 등, 선택)"></textarea>
+    <button id="save-btn" class="big-button">③ 저장</button>
+    <button id="restart-btn" class="secondary-button">새로 측정</button>
+  </div>
+
+  <div class="records-panel">
+    <h2>측정 기록</h2>
+    <div id="records-list"></div>
+    <div class="export-row">
+      <button id="export-csv-btn" class="secondary-button">CSV 내보내기</button>
+      <button id="export-json-btn" class="secondary-button">JSON 내보내기</button>
+    </div>
+  </div>
+</section>
+
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
