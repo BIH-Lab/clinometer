@@ -8,6 +8,7 @@ import {
   strikeLineDeg,
   strikeQuadrantLabel,
   dipQuadrantLabel,
+  snapDipDirection,
   isLevel,
   dipAngleFromTilt,
   compassLabel,
@@ -167,7 +168,7 @@ function handleBackToStrike() {
 function handleCaptureDip() {
   if (typeof latest.tilt !== "number" || typeof latest.heading !== "number") return;
   captured.dipDeg = dipAngleFromTilt(latest.tilt);
-  captured.dipDirectionDeg = latest.heading;
+  captured.dipDirectionDeg = snapDipDirection(captured.strikeHeadingDeg, latest.heading);
 
   summaryStrike.textContent = strikeQuadrantLabel(captured.strikeHeadingDeg);
   summaryDip.textContent = dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg);

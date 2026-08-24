@@ -55,3 +55,22 @@ export function dipQuadrantLabel(dipDeg, dipDirectionDeg) {
   if (dipDeg >= VERTICAL_DIP_THRESHOLD) return `${Math.round(dipDeg)}° (수직층)`;
   return `${Math.round(dipDeg)}°${compassLabel(dipDirectionDeg)}`;
 }
+
+function angularDifference(a, b) {
+  const diff = Math.abs(normalizeDeg(a) - normalizeDeg(b)) % 360;
+  return diff > 180 ? 360 - diff : diff;
+}
+
+// 경사 방향은 정의상 항상 주향과 정확히 90도를 이룬다. 주향/경사를 잴 때 나침반을
+// 두 번 따로 측정하면 자북 흔들림 등으로 90도에서 살짝 어긋날 수 있으므로,
+// 실측값은 두 후보(주향+90, 주향-90) 중 더 가까운 쪽으로 스냅해 항상 정확히 90도로 맞춘다.
+export function snapDipDirection(strikeHeadingDeg, rawDipDirectionDeg) {
+  if (typeof strikeHeadingDeg !== "number" || typeof rawDipDirectionDeg !== "number") {
+    return rawDipDirectionDeg;
+  }
+  const plus90 = normalizeDeg(strikeHeadingDeg + 90);
+  const minus90 = normalizeDeg(strikeHeadingDeg - 90);
+  return angularDifference(rawDipDirectionDeg, plus90) <= angularDifference(rawDipDirectionDeg, minus90)
+    ? plus90
+    : minus90;
+}
