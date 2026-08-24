@@ -69,7 +69,7 @@ function csvEscape(value) {
 
 export function exportCSV() {
   const records = getRecords();
-  const header = ["timestamp", "strikeDeg", "dipDeg", "dipDirectionDeg", "note"];
+  const header = ["timestamp", "strikeLabel", "dipLabel", "strikeDeg", "dipDeg", "dipDirectionDeg", "note"];
   const lines = [header.join(",")];
   for (const r of records) {
     lines.push(header.map((key) => csvEscape(r[key])).join(","));

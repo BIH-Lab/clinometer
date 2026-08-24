@@ -34,3 +34,24 @@ export function formatDeg(value, digits = 0) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
   return `${value.toFixed(digits)}°`;
 }
+
+export const HORIZONTAL_DIP_THRESHOLD = 3;
+export const VERTICAL_DIP_THRESHOLD = 85;
+
+// 지질도 표기 관례에 맞춘 주향 표시: N60°E / N30°W, 남-북선은 N-S, 동-서선은 E-W.
+export function strikeQuadrantLabel(headingDeg, tol = 1) {
+  if (typeof headingDeg !== "number") return "--";
+  const line = strikeLineDeg(headingDeg);
+  if (line <= tol || line >= 180 - tol) return "N-S";
+  if (Math.abs(line - 90) <= tol) return "E-W";
+  if (line < 90) return `N${Math.round(line)}°E`;
+  return `N${Math.round(180 - line)}°W`;
+}
+
+// 지질도 표기 관례에 맞춘 경사 표시: 30°SE, 완전 수평/수직은 별도 표기.
+export function dipQuadrantLabel(dipDeg, dipDirectionDeg) {
+  if (typeof dipDeg !== "number") return "--";
+  if (dipDeg <= HORIZONTAL_DIP_THRESHOLD) return "0° (수평층)";
+  if (dipDeg >= VERTICAL_DIP_THRESHOLD) return `${Math.round(dipDeg)}° (수직층)`;
+  return `${Math.round(dipDeg)}°${compassLabel(dipDirectionDeg)}`;
+}

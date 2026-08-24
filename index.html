@@ -29,6 +29,22 @@
   <div id="permission-denied" class="warning-banner hidden">
     센서 권한이 거부되었습니다. 브라우저 설정에서 동작 및 방향 센서 권한을 허용한 뒤 새로고침해주세요.
   </div>
+
+  <details class="info-box">
+    <summary>주향과 경사란?</summary>
+    <p>
+      <b>주향(strike)</b>은 기울어진 암반면과 수평면이 만나는 선의 방향입니다. 방향이 없는 "선"이므로
+      북(N)을 기준으로 한 각도로 <b>N60°E</b>처럼 표기합니다 (동서 방향이면 E-W, 남북 방향이면 N-S).
+    </p>
+    <p>
+      <b>경사(dip)</b>는 주향과 90도를 이루는 방향(가장 급하게 내려가는 방향)으로 암반면이
+      수평면에서 얼마나 기울었는지의 각도(0~90°)입니다. <b>30°SE</b>는 남동쪽으로 30도 기울었다는 뜻입니다.
+    </p>
+    <p>
+      지질도에서는 <b>긴 선</b>으로 주향을, <b>짧은 눈금</b>으로 경사가 내려가는 방향을, <b>숫자</b>로 경사각을
+      표시합니다. 완전히 수평이면 ⊕, 완전히 수직이면 짧은 눈금 없이 긴 선만 그립니다.
+    </p>
+  </details>
 </section>
 
 <!-- 측정 화면 -->
@@ -48,17 +64,20 @@
   <div class="compass-wrap">
     <svg width="200" height="200" viewBox="0 0 200 200">
       <circle cx="100" cy="100" r="90" fill="#0b1220" stroke="#2a3a5c" stroke-width="2" />
-      <text class="compass-label" x="100" y="20">N</text>
-      <text class="compass-label" x="184" y="105">E</text>
-      <text class="compass-label" x="100" y="188">S</text>
-      <text class="compass-label" x="16" y="105">W</text>
+      <!-- 회전하는 다이얼: 실제 나침반처럼 N이 진짜 북쪽을 계속 가리킴 -->
+      <g id="dial-group">
+        <text class="compass-label compass-label-n" x="100" y="24">N</text>
+        <text class="compass-label" x="176" y="105">E</text>
+        <text class="compass-label" x="100" y="182">S</text>
+        <text class="compass-label" x="24" y="105">W</text>
+        <g id="dip-tick-group" class="hidden">
+          <line x1="100" y1="100" x2="100" y2="58" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
+        </g>
+      </g>
+      <!-- 고정 지시선: 폰이 지금 향하는 방향(=측정 중인 주향) -->
+      <line id="heading-pointer" x1="100" y1="16" x2="100" y2="184" stroke="#f97316" stroke-width="4" stroke-linecap="round" />
+      <polygon points="100,10 94,22 106,22" fill="#f97316" />
       <circle cx="100" cy="100" r="4" fill="#e2e8f0" />
-      <g id="strike-group">
-        <line x1="100" y1="14" x2="100" y2="186" stroke="#f97316" stroke-width="5" stroke-linecap="round" />
-      </g>
-      <g id="dip-tick-group" class="hidden">
-        <line x1="100" y1="14" x2="100" y2="26" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" />
-      </g>
     </svg>
   </div>
   <p class="readout-sub" style="text-align:center;">
@@ -67,12 +86,14 @@
 
   <div id="strike-panel">
     <div class="level-panel">
-      <div class="level-title">좌우 수평계 (수평이 되면 초록색)</div>
-      <div class="level-track">
-        <div class="level-center-mark"></div>
-        <div id="level-ball" class="level-ball"></div>
+      <div class="level-title">기포 수평계 (수평이 되면 초록색 · 좌우 위치가 기준)</div>
+      <div class="bubble-level">
+        <div class="bubble-gate"></div>
+        <div class="bubble-crosshair-h"></div>
+        <div class="bubble-crosshair-v"></div>
+        <div id="bubble-dot" class="bubble-dot"></div>
       </div>
-      <div id="level-status" class="level-status">기기를 좌우로 기울여 수평을 맞추세요.</div>
+      <div id="level-status" class="level-status">기기를 기울여 기포를 가운데 통로로 옮기세요.</div>
     </div>
     <button id="capture-strike-btn" class="big-button" disabled>① 주향 기록</button>
   </div>
@@ -82,15 +103,26 @@
       <div class="readout-value" id="dip-readout">0°</div>
       <div class="readout-sub">경사 각도 (좌우 기울기)</div>
     </div>
+    <div class="dip-gauge">
+      <div class="dip-gauge-scale"><span>90°</span><span>45°</span><span>0°</span></div>
+      <div class="dip-gauge-track">
+        <div id="dip-gauge-fill" class="dip-gauge-fill"></div>
+        <div id="dip-gauge-marker" class="dip-gauge-marker"></div>
+      </div>
+    </div>
     <button id="capture-dip-btn" class="big-button" disabled>② 경사 기록</button>
     <button id="back-to-strike-btn" class="secondary-button">① 주향 다시 측정</button>
   </div>
 
   <div id="review-panel" class="hidden">
     <div class="summary-panel">
-      <div class="summary-row"><span class="label">주향</span><span class="value" id="summary-strike">--</span></div>
-      <div class="summary-row"><span class="label">경사</span><span class="value" id="summary-dip">--</span></div>
-      <div class="summary-row"><span class="label">경사 방향</span><span class="value" id="summary-dipdir">--</span></div>
+      <div class="symbol-row">
+        <div id="strike-dip-symbol" class="symbol-box"></div>
+        <div class="summary-rows">
+          <div class="summary-row"><span class="label">주향</span><span class="value" id="summary-strike">--</span></div>
+          <div class="summary-row"><span class="label">경사</span><span class="value" id="summary-dip">--</span></div>
+        </div>
+      </div>
     </div>
     <textarea id="note-input" placeholder="메모 (지점명, 암종 등, 선택)"></textarea>
     <button id="save-btn" class="big-button">③ 저장</button>

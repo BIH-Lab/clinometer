@@ -6,11 +6,14 @@ import {
 } from "./sensors.js";
 import {
   strikeLineDeg,
+  strikeQuadrantLabel,
+  dipQuadrantLabel,
   isLevel,
   dipAngleFromTilt,
   compassLabel,
   formatDeg,
 } from "./geology.js";
+import { strikeDipSymbolSVG } from "./symbol.js";
 import { getRecords, addRecord, deleteRecord, exportCSV, exportJSON } from "./storage.js";
 
 const el = (id) => document.getElementById(id);
@@ -21,7 +24,7 @@ const insecureWarning = el("insecure-warning");
 const permissionDenied = el("permission-denied");
 const calibrationBanner = el("calibration-banner");
 
-const strikeGroup = el("strike-group");
+const dialGroup = el("dial-group");
 const dipTickGroup = el("dip-tick-group");
 const headingReadout = el("heading-readout");
 
@@ -30,19 +33,23 @@ const dipPanel = el("dip-panel");
 const reviewPanel = el("review-panel");
 const stepEls = Array.from(document.querySelectorAll(".step"));
 
-const levelBall = el("level-ball");
+const bubbleDot = el("bubble-dot");
 const levelStatus = el("level-status");
 const dipReadout = el("dip-readout");
+const dipGaugeFill = el("dip-gauge-fill");
+const dipGaugeMarker = el("dip-gauge-marker");
 
+const strikeDipSymbol = el("strike-dip-symbol");
 const summaryStrike = el("summary-strike");
 const summaryDip = el("summary-dip");
-const summaryDipDir = el("summary-dipdir");
 const noteInput = el("note-input");
 
 const recordsList = el("records-list");
 
+const BUBBLE_MAX_TILT = 30;
+
 let step = "strike"; // 'strike' | 'dip' | 'review'
-let latest = { heading: null, tilt: null, accuracy: null };
+let latest = { heading: null, tilt: null, frontBack: null, accuracy: null };
 let captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
 
 function setStep(next) {
@@ -60,16 +67,36 @@ function setStep(next) {
   reviewPanel.classList.toggle("hidden", step !== "review");
 }
 
+// 실제 손나침반처럼: 다이얼(N/E/S/W)이 회전해 N이 항상 진짜 북쪽을 가리키고,
+// 화면 위쪽의 고정 지시선은 폰이 지금(또는 주향을 기록한 순간) 향하는 방향을 나타낸다.
 function updateCompassVisual() {
-  if (step === "strike" && typeof latest.heading === "number") {
-    strikeGroup.style.transform = `rotate(${latest.heading}deg)`;
-  } else if (captured.strikeHeadingDeg !== null) {
-    strikeGroup.style.transform = `rotate(${captured.strikeHeadingDeg}deg)`;
+  const referenceHeading = step === "strike" ? latest.heading : captured.strikeHeadingDeg;
+  if (typeof referenceHeading === "number") {
+    dialGroup.style.transform = `rotate(${-referenceHeading}deg)`;
   }
   if (captured.dipDirectionDeg !== null) {
     dipTickGroup.classList.remove("hidden");
     dipTickGroup.style.transform = `rotate(${captured.dipDirectionDeg}deg)`;
   }
+}
+
+function updateBubbleLevel(tilt, frontBack) {
+  const gamma = Math.max(-BUBBLE_MAX_TILT, Math.min(BUBBLE_MAX_TILT, tilt ?? 0));
+  const beta = Math.max(-BUBBLE_MAX_TILT, Math.min(BUBBLE_MAX_TILT, frontBack ?? 0));
+  bubbleDot.style.left = `${50 + (gamma / BUBBLE_MAX_TILT) * 42}%`;
+  bubbleDot.style.top = `${50 + (beta / BUBBLE_MAX_TILT) * 42}%`;
+  const level = isLevel(tilt);
+  bubbleDot.classList.toggle("level-ok", level);
+  levelStatus.textContent = level
+    ? "수평입니다. 지금 주향을 기록하세요."
+    : "기기를 기울여 기포를 가운데 통로로 옮기세요.";
+}
+
+function updateDipGauge(dip) {
+  const pct = typeof dip === "number" ? Math.min(100, Math.max(0, (dip / 90) * 100)) : 0;
+  dipGaugeFill.style.height = `${pct}%`;
+  dipGaugeMarker.style.bottom = `${pct}%`;
+  dipReadout.textContent = formatDeg(dip);
 }
 
 function onReading(reading) {
@@ -85,18 +112,9 @@ function onReading(reading) {
   calibrationBanner.classList.toggle("hidden", !badAccuracy);
 
   if (step === "strike") {
-    const tilt = reading.tilt;
-    const clamped = Math.max(-45, Math.min(45, tilt ?? 0));
-    const pct = 50 + (clamped / 45) * 44;
-    levelBall.style.left = `${pct}%`;
-    const level = isLevel(tilt);
-    levelBall.classList.toggle("level-ok", level);
-    levelStatus.textContent = level
-      ? "수평입니다. 지금 주향을 기록하세요."
-      : "기기를 좌우로 기울여 수평을 맞추세요.";
+    updateBubbleLevel(reading.tilt, reading.frontBack);
   } else if (step === "dip") {
-    const dip = dipAngleFromTilt(reading.tilt);
-    dipReadout.textContent = formatDeg(dip);
+    updateDipGauge(dipAngleFromTilt(reading.tilt));
   }
 
   updateCompassVisual();
@@ -141,11 +159,14 @@ function handleCaptureDip() {
   captured.dipDeg = dipAngleFromTilt(latest.tilt);
   captured.dipDirectionDeg = latest.heading;
 
-  summaryStrike.textContent = `${formatDeg(strikeLineDeg(captured.strikeHeadingDeg))} / ${formatDeg(
-    (strikeLineDeg(captured.strikeHeadingDeg) + 180) % 360
-  )}`;
-  summaryDip.textContent = formatDeg(captured.dipDeg);
-  summaryDipDir.textContent = `${formatDeg(captured.dipDirectionDeg)} (${compassLabel(captured.dipDirectionDeg)})`;
+  summaryStrike.textContent = strikeQuadrantLabel(captured.strikeHeadingDeg);
+  summaryDip.textContent = dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg);
+  strikeDipSymbol.innerHTML = strikeDipSymbolSVG(
+    strikeLineDeg(captured.strikeHeadingDeg),
+    captured.dipDeg,
+    captured.dipDirectionDeg,
+    64
+  );
 
   setStep("review");
   updateCompassVisual();
@@ -157,6 +178,8 @@ function handleSave() {
     strikeDeg: strikeLineDeg(captured.strikeHeadingDeg),
     dipDeg: captured.dipDeg,
     dipDirectionDeg: captured.dipDirectionDeg,
+    strikeLabel: strikeQuadrantLabel(captured.strikeHeadingDeg),
+    dipLabel: dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg),
     note: noteInput.value.trim(),
   });
   noteInput.value = "";
@@ -181,9 +204,14 @@ function renderRecords() {
     const row = document.createElement("div");
     row.className = "record-row";
 
+    const symbol = document.createElement("div");
+    symbol.className = "record-symbol";
+    symbol.innerHTML = strikeDipSymbolSVG(r.strikeDeg, r.dipDeg, r.dipDirectionDeg, 36);
+
     const info = document.createElement("div");
+    info.className = "record-info";
     const main = document.createElement("div");
-    main.textContent = `주향 ${formatDeg(r.strikeDeg)} · 경사 ${formatDeg(r.dipDeg)}`;
+    main.textContent = `주향 ${r.strikeLabel || formatDeg(r.strikeDeg)} · 경사 ${r.dipLabel || formatDeg(r.dipDeg)}`;
     const meta = document.createElement("div");
     meta.className = "meta";
     const time = new Date(r.timestamp).toLocaleString("ko-KR");
@@ -197,7 +225,7 @@ function renderRecords() {
       renderRecords();
     });
 
-    row.append(info, deleteBtn);
+    row.append(symbol, info, deleteBtn);
     recordsList.appendChild(row);
   }
 }

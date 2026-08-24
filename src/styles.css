@@ -114,12 +114,17 @@ p.lead { color: var(--muted); line-height: 1.5; }
   font-family: inherit;
   text-anchor: middle;
 }
-#strike-group {
+#dial-group {
   transform-origin: 100px 100px;
   transition: transform 0.15s linear;
 }
 #dip-tick-group {
   transform-origin: 100px 100px;
+}
+.compass-label-n {
+  fill: #ef4444;
+  font-weight: 800;
+  font-size: 15px;
 }
 
 .level-panel {
@@ -130,35 +135,90 @@ p.lead { color: var(--muted); line-height: 1.5; }
   border-radius: 12px;
 }
 .level-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
-.level-track {
+
+.bubble-level {
   position: relative;
-  height: 36px;
+  width: 150px;
+  height: 150px;
+  margin: 4px auto 0;
   background: #0b1220;
-  border-radius: 18px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
   overflow: hidden;
 }
-.level-center-mark {
+.bubble-gate {
   position: absolute;
-  left: 50%;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: var(--border);
-  transform: translateX(-1px);
+  left: 50%;
+  width: 18%;
+  transform: translateX(-50%);
+  background: rgba(56, 189, 248, 0.1);
+  border-left: 1px dashed var(--border);
+  border-right: 1px dashed var(--border);
 }
-.level-ball {
+.bubble-crosshair-h, .bubble-crosshair-v {
   position: absolute;
-  top: 3px;
-  width: 30px;
-  height: 30px;
+  background: var(--border);
+}
+.bubble-crosshair-h { left: 0; right: 0; top: 50%; height: 1px; }
+.bubble-crosshair-v { top: 0; bottom: 0; left: 50%; width: 1px; }
+.bubble-dot {
+  position: absolute;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--warn);
   left: 50%;
-  transform: translateX(-15px);
-  transition: left 0.1s linear, background-color 0.2s;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.1s linear, top 0.1s linear, background-color 0.2s;
 }
-.level-ball.level-ok { background: var(--ok); }
-.level-status { margin-top: 8px; font-size: 0.85rem; color: var(--muted); }
+.bubble-dot.level-ok { background: var(--ok); }
+.level-status { margin-top: 8px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+
+.dip-gauge {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: center;
+  margin-top: 4px;
+}
+.dip-gauge-track {
+  position: relative;
+  width: 40px;
+  height: 160px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.dip-gauge-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0%;
+  background: rgba(56, 189, 248, 0.28);
+  transition: height 0.1s linear;
+}
+.dip-gauge-marker {
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 4px;
+  bottom: 0%;
+  background: var(--accent);
+  transition: bottom 0.1s linear;
+}
+.dip-gauge-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 2px 0;
+}
 
 .readout-panel {
   margin: 16px 0;
@@ -182,6 +242,38 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .summary-row .label { color: var(--muted); }
 .summary-row .value { font-weight: 700; }
 
+.symbol-row { display: flex; align-items: center; gap: 16px; }
+.symbol-box {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.summary-rows { flex: 1; }
+
+.info-box {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.info-box summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+.info-box p { color: var(--muted); margin: 8px 0 0; }
+.info-box p:first-of-type { margin-top: 10px; }
+
 textarea#note-input {
   width: 100%;
   margin-top: 10px;
@@ -201,6 +293,7 @@ textarea#note-input {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 10px;
   margin-bottom: 6px;
   background: var(--panel);
@@ -208,6 +301,18 @@ textarea#note-input {
   border-radius: 8px;
   font-size: 0.85rem;
 }
+.record-row .record-symbol {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.record-row .record-info { flex: 1; }
 .record-row .meta { color: var(--muted); font-size: 0.75rem; }
 .record-row button {
   background: none;
