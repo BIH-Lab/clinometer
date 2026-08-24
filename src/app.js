@@ -73,11 +73,11 @@ function setStep(next) {
 function updateCompassVisual() {
   const referenceHeading = step === "strike" ? latest.heading : captured.strikeHeadingDeg;
   if (typeof referenceHeading === "number") {
-    needleGroup.style.transform = `rotate(${referenceHeading}deg)`;
+    needleGroup.style.transform = `rotate(${-referenceHeading}deg)`;
   }
   if (captured.dipDirectionDeg !== null && captured.strikeHeadingDeg !== null) {
     dipTickGroup.classList.remove("hidden");
-    const relative = captured.dipDirectionDeg - captured.strikeHeadingDeg;
+    const relative = captured.strikeHeadingDeg - captured.dipDirectionDeg;
     dipTickGroup.style.transform = `rotate(${relative}deg)`;
   }
 }
