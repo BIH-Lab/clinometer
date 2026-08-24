@@ -114,17 +114,12 @@ p.lead { color: var(--muted); line-height: 1.5; }
   font-family: inherit;
   text-anchor: middle;
 }
-#dial-group {
+#needle-group {
   transform-origin: 100px 100px;
   transition: transform 0.15s linear;
 }
 #dip-tick-group {
   transform-origin: 100px 100px;
-}
-.compass-label-n {
-  fill: #ef4444;
-  font-weight: 800;
-  font-size: 15px;
 }
 
 .level-panel {

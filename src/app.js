@@ -24,7 +24,7 @@ const insecureWarning = el("insecure-warning");
 const permissionDenied = el("permission-denied");
 const calibrationBanner = el("calibration-banner");
 
-const dialGroup = el("dial-group");
+const needleGroup = el("needle-group");
 const dipTickGroup = el("dip-tick-group");
 const headingReadout = el("heading-readout");
 
@@ -67,16 +67,17 @@ function setStep(next) {
   reviewPanel.classList.toggle("hidden", step !== "review");
 }
 
-// 실제 손나침반처럼: 다이얼(N/E/S/W)이 회전해 N이 항상 진짜 북쪽을 가리키고,
-// 화면 위쪽의 고정 지시선은 폰이 지금(또는 주향을 기록한 순간) 향하는 방향을 나타낸다.
+// N/E/S/W 배경판은 고정, 바늘이 회전해서 폰이 지금(또는 주향을 기록한 순간)
+// 향하는 방향을 가리킨다 (폰을 돌리는 방향 = 바늘이 도는 방향, 직관적으로 일치).
 function updateCompassVisual() {
   const referenceHeading = step === "strike" ? latest.heading : captured.strikeHeadingDeg;
   if (typeof referenceHeading === "number") {
-    dialGroup.style.transform = `rotate(${-referenceHeading}deg)`;
+    needleGroup.style.transform = `rotate(${referenceHeading}deg)`;
   }
-  if (captured.dipDirectionDeg !== null) {
+  if (captured.dipDirectionDeg !== null && captured.strikeHeadingDeg !== null) {
     dipTickGroup.classList.remove("hidden");
-    dipTickGroup.style.transform = `rotate(${captured.dipDirectionDeg}deg)`;
+    const relative = captured.dipDirectionDeg - captured.strikeHeadingDeg;
+    dipTickGroup.style.transform = `rotate(${relative}deg)`;
   }
 }
 

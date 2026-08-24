@@ -64,19 +64,19 @@
   <div class="compass-wrap">
     <svg width="200" height="200" viewBox="0 0 200 200">
       <circle cx="100" cy="100" r="90" fill="#0b1220" stroke="#2a3a5c" stroke-width="2" />
-      <!-- 회전하는 다이얼: 실제 나침반처럼 N이 진짜 북쪽을 계속 가리킴 -->
-      <g id="dial-group">
-        <text class="compass-label compass-label-n" x="100" y="24">N</text>
-        <text class="compass-label" x="176" y="105">E</text>
-        <text class="compass-label" x="100" y="182">S</text>
-        <text class="compass-label" x="24" y="105">W</text>
+      <!-- 고정 배경판: N/E/S/W는 움직이지 않음 (표준 나침반 배치) -->
+      <text class="compass-label" x="100" y="24">N</text>
+      <text class="compass-label" x="176" y="105">E</text>
+      <text class="compass-label" x="100" y="182">S</text>
+      <text class="compass-label" x="24" y="105">W</text>
+      <!-- 회전하는 바늘: 폰이 지금 향하는 방향(=측정 중인 주향), 끝이 빨간색 -->
+      <g id="needle-group">
+        <line x1="100" y1="16" x2="100" y2="184" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+        <polygon points="100,10 94,22 106,22" fill="#ef4444" />
         <g id="dip-tick-group" class="hidden">
           <line x1="100" y1="100" x2="100" y2="58" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
         </g>
       </g>
-      <!-- 고정 지시선: 폰이 지금 향하는 방향(=측정 중인 주향) -->
-      <line id="heading-pointer" x1="100" y1="16" x2="100" y2="184" stroke="#f97316" stroke-width="4" stroke-linecap="round" />
-      <polygon points="100,10 94,22 106,22" fill="#f97316" />
       <circle cx="100" cy="100" r="4" fill="#e2e8f0" />
     </svg>
   </div>
