@@ -172,6 +172,38 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .bubble-dot.level-ok { background: var(--ok); }
 .level-status { margin-top: 8px; font-size: 0.85rem; color: var(--muted); text-align: center; }
 
+.steady-check { margin-top: 12px; }
+.steady-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-align: center; }
+.steady-track {
+  position: relative;
+  height: 28px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.steady-center-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+  transform: translateX(-1px);
+}
+.steady-ball {
+  position: absolute;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--warn);
+  left: 50%;
+  transform: translateX(-12px);
+  transition: left 0.1s linear, background-color 0.2s;
+}
+.steady-ball.level-ok { background: var(--ok); }
+
 .dip-gauge {
   display: flex;
   gap: 10px;

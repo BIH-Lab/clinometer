@@ -38,6 +38,7 @@ const levelStatus = el("level-status");
 const dipReadout = el("dip-readout");
 const dipGaugeFill = el("dip-gauge-fill");
 const dipGaugeMarker = el("dip-gauge-marker");
+const steadyBall = el("steady-ball");
 
 const strikeDipSymbol = el("strike-dip-symbol");
 const summaryStrike = el("summary-strike");
@@ -100,6 +101,13 @@ function updateDipGauge(dip) {
   dipReadout.textContent = formatDeg(dip);
 }
 
+// 경사(좌우 기울기)를 읽는 동안 앞뒤로 흔들려 주향 방향이 틀어지지 않았는지 확인.
+function updateSteadyCheck(frontBack) {
+  const clamped = Math.max(-BUBBLE_MAX_TILT, Math.min(BUBBLE_MAX_TILT, frontBack ?? 0));
+  steadyBall.style.left = `${50 + (clamped / BUBBLE_MAX_TILT) * 44}%`;
+  steadyBall.classList.toggle("level-ok", isLevel(frontBack));
+}
+
 function onReading(reading) {
   latest = reading;
 
@@ -116,6 +124,7 @@ function onReading(reading) {
     updateBubbleLevel(reading.tilt, reading.frontBack);
   } else if (step === "dip") {
     updateDipGauge(dipAngleFromTilt(reading.tilt));
+    updateSteadyCheck(reading.frontBack);
   }
 
   updateCompassVisual();
