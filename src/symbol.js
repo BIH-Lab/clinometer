@@ -35,11 +35,16 @@ export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size 
   const p2 = toXY(c, c, strikeLineDeg + 180, lineHalf);
   const lineSvg = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
 
+  const tickLen = lineHalf * 0.55;
+
   if (dipDeg >= VERTICAL_DIP_THRESHOLD) {
-    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}</svg>`;
+    // 수직층: 경사가 내려가는 쪽이 없으므로 눈금을 주향선 양쪽에 대칭으로 그린다 (USGS/FGDC 관례).
+    const tickA = toXY(c, c, dipDirectionDeg, tickLen);
+    const tickB = toXY(c, c, dipDirectionDeg + 180, tickLen);
+    const bothTicksSvg = `<line x1="${tickA.x.toFixed(1)}" y1="${tickA.y.toFixed(1)}" x2="${tickB.x.toFixed(1)}" y2="${tickB.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}${bothTicksSvg}</svg>`;
   }
 
-  const tickLen = lineHalf * 0.55;
   const tick = toXY(c, c, dipDirectionDeg, tickLen);
   const tickSvg = `<line x1="${c}" y1="${c}" x2="${tick.x.toFixed(1)}" y2="${tick.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
   const numPos = toXY(c, c, dipDirectionDeg, tickLen * 1.45);
