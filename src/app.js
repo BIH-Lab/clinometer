@@ -49,10 +49,14 @@ const noteInput = el("note-input");
 const recordsList = el("records-list");
 
 const BUBBLE_MAX_TILT = 30;
+// 기기가 많이 기울면(경사각을 읽는 중) 나침반 방위 자체의 정확도가 떨어질 수 있으므로,
+// 아직 거의 평평할 때(이 각도 이내) 측정된 방위만 "경사 방향" 후보로 계속 갱신해 사용한다.
+const DIRECTION_LATCH_TILT = 15;
 
 let step = "strike"; // 'strike' | 'dip' | 'review'
 let latest = { heading: null, tilt: null, frontBack: null, accuracy: null };
 let captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
+let dipDirectionCandidate = null;
 
 function setStep(next) {
   step = next;
@@ -126,6 +130,14 @@ function onReading(reading) {
   } else if (step === "dip") {
     updateDipGauge(dipAngleFromTilt(reading.tilt));
     updateSteadyCheck(reading.frontBack);
+    if (
+      typeof reading.heading === "number" &&
+      typeof reading.tilt === "number" &&
+      Math.abs(reading.tilt) <= DIRECTION_LATCH_TILT
+    ) {
+      // 아직 많이 기울기 전(방향만 맞추는 중)의 방위를 계속 최신값으로 잡아둔다.
+      dipDirectionCandidate = reading.heading;
+    }
   }
 
   updateCompassVisual();
@@ -154,6 +166,7 @@ async function handleStart() {
 function handleCaptureStrike() {
   if (typeof latest.heading !== "number") return;
   captured.strikeHeadingDeg = latest.heading;
+  dipDirectionCandidate = null;
   setStep("dip");
   updateCompassVisual();
 }
@@ -161,6 +174,7 @@ function handleCaptureStrike() {
 function handleBackToStrike() {
   captured.dipDeg = null;
   captured.dipDirectionDeg = null;
+  dipDirectionCandidate = null;
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
@@ -168,7 +182,10 @@ function handleBackToStrike() {
 function handleCaptureDip() {
   if (typeof latest.tilt !== "number" || typeof latest.heading !== "number") return;
   captured.dipDeg = dipAngleFromTilt(latest.tilt);
-  captured.dipDirectionDeg = snapDipDirection(captured.strikeHeadingDeg, latest.heading);
+  // 많이 기울어진 지금 이 순간의 나침반 방위보다, 아직 평평했을 때(회전만 마친 상태) 잡아둔
+  // 방위가 더 정확하므로 그것을 우선 사용한다.
+  const directionSource = dipDirectionCandidate !== null ? dipDirectionCandidate : latest.heading;
+  captured.dipDirectionDeg = snapDipDirection(captured.strikeHeadingDeg, directionSource);
 
   summaryStrike.textContent = strikeQuadrantLabel(captured.strikeHeadingDeg);
   summaryDip.textContent = dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg);
@@ -200,6 +217,7 @@ function handleSave() {
 
 function handleRestart() {
   captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
+  dipDirectionCandidate = null;
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
