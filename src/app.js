@@ -16,6 +16,7 @@ import {
   formatDeg,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
+import { calculateDeclination } from "./declination.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -26,6 +27,8 @@ const permissionDenied = el("permission-denied");
 const calibrationBanner = el("calibration-banner");
 const noCompassWarning = el("no-compass-warning");
 const declinationInput = el("declination-input");
+const declinationGpsBtn = el("declination-gps-btn");
+const declinationGpsStatus = el("declination-gps-status");
 
 const needleGroup = el("needle-group");
 const dipTickGroup = el("dip-tick-group");
@@ -158,6 +161,27 @@ function onReading(rawReading) {
   updateCompassVisual();
 }
 
+function handleDeclinationGps() {
+  if (!("geolocation" in navigator)) {
+    declinationGpsStatus.textContent = "이 브라우저는 위치 정보를 지원하지 않습니다.";
+    return;
+  }
+  declinationGpsStatus.textContent = "위치 확인 중...";
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude, altitude } = position.coords;
+      const altitudeKm = typeof altitude === "number" ? altitude / 1000 : 0;
+      const declination = calculateDeclination(latitude, longitude, altitudeKm);
+      declinationInput.value = declination;
+      declinationGpsStatus.textContent = `현재 위치 기준 자편각 ${formatDeg(declination, 1)} 적용됨 (필요하면 직접 수정 가능)`;
+    },
+    () => {
+      declinationGpsStatus.textContent = "위치를 가져오지 못했습니다. 위치 권한을 허용했는지 확인하거나 직접 입력해주세요.";
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 async function handleStart() {
   insecureWarning.classList.toggle("hidden", isSecureContextOk());
   permissionDenied.classList.add("hidden");
@@ -235,6 +259,7 @@ function registerServiceWorker() {
 }
 
 el("start-btn").addEventListener("click", handleStart);
+declinationGpsBtn.addEventListener("click", handleDeclinationGps);
 el("capture-strike-btn").addEventListener("click", handleCaptureStrike);
 el("back-to-strike-btn").addEventListener("click", handleBackToStrike);
 el("capture-dip-btn").addEventListener("click", handleCaptureDip);

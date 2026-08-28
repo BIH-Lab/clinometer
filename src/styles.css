@@ -314,8 +314,13 @@ p.lead { color: var(--muted); line-height: 1.5; }
   color: var(--muted);
   margin-bottom: 6px;
 }
+.declination-row {
+  display: flex;
+  gap: 8px;
+}
 .declination-box input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 10px;
   background: #0b1220;
   color: var(--text);
@@ -323,4 +328,16 @@ p.lead { color: var(--muted); line-height: 1.5; }
   border-radius: 8px;
   font-family: inherit;
   font-size: 1rem;
+}
+.declination-row .secondary-button {
+  flex: none;
+  width: auto;
+  margin-top: 0;
+  white-space: nowrap;
+}
+.declination-gps-status {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-height: 1.1em;
 }
