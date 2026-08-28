@@ -48,6 +48,8 @@
     <p>
       <b>경사(dip)</b>는 주향과 90도를 이루는 방향(가장 급하게 내려가는 방향)으로 암반면이
       수평면에서 얼마나 기울었는지의 각도(0~90°)입니다. <b>30°SE</b>는 남동쪽으로 30도 기울었다는 뜻입니다.
+      측정할 때는 먼저 평평한 상태로 90도 돌려 방향을 맞춘 뒤 기울여서 각도를 읽으세요
+      (많이 기울면 나침반 방위가 부정확해질 수 있어 방향은 평평했을 때 값을 자동으로 사용합니다).
     </p>
     <p>
       지질도에서는 <b>긴 선</b>으로 주향을, <b>짧은 눈금</b>으로 경사가 내려가는 방향을, <b>숫자</b>로 경사각을
@@ -74,7 +76,7 @@
   </div>
 
   <div class="compass-wrap">
-    <svg width="200" height="200" viewBox="0 0 200 200">
+    <svg width="150" height="150" viewBox="0 0 200 200">
       <circle cx="100" cy="100" r="90" fill="#0b1220" stroke="#2a3a5c" stroke-width="2" />
       <!-- 고정 배경판: N/E/S/W는 움직이지 않음 (E/W는 일반 나침반과 반대로 배치) -->
       <text class="compass-label" x="100" y="24">N</text>
@@ -111,26 +113,24 @@
   </div>
 
   <div id="dip-panel" class="hidden">
-    <p class="lead" style="margin: 4px 0 0; font-size: 0.85rem;">
-      먼저 평평한 상태로 90도 돌려 경사 방향을 맞춘 뒤, 그 다음 기울여서 각도를 읽으세요
-      (많이 기울어진 상태에서는 나침반 방위가 부정확해질 수 있어 방향은 평평했을 때 값을 사용합니다).
-    </p>
-    <div class="readout-panel">
-      <div class="readout-value" id="dip-readout">0°</div>
-      <div class="readout-sub">경사 각도 (좌우 기울기)</div>
-    </div>
-    <div class="steady-check">
-      <div class="steady-title">주향 방향 유지 확인 (앞뒤로 흔들리지 않아야 함)</div>
-      <div class="steady-track">
-        <div class="steady-center-mark"></div>
-        <div id="steady-ball" class="steady-ball"></div>
+    <div class="dip-main-row">
+      <div class="dip-gauge">
+        <div class="dip-gauge-scale"><span>90°</span><span>45°</span><span>0°</span></div>
+        <div class="dip-gauge-track">
+          <div id="dip-gauge-fill" class="dip-gauge-fill"></div>
+          <div id="dip-gauge-marker" class="dip-gauge-marker"></div>
+        </div>
       </div>
-    </div>
-    <div class="dip-gauge">
-      <div class="dip-gauge-scale"><span>90°</span><span>45°</span><span>0°</span></div>
-      <div class="dip-gauge-track">
-        <div id="dip-gauge-fill" class="dip-gauge-fill"></div>
-        <div id="dip-gauge-marker" class="dip-gauge-marker"></div>
+      <div class="dip-readout-col">
+        <div class="readout-value" id="dip-readout">0°</div>
+        <div class="readout-sub">경사 각도</div>
+        <div class="steady-check">
+          <div class="steady-title">방향 유지 확인</div>
+          <div class="steady-track">
+            <div class="steady-center-mark"></div>
+            <div id="steady-ball" class="steady-ball"></div>
+          </div>
+        </div>
       </div>
     </div>
     <button id="capture-dip-btn" class="big-button" disabled>② 경사 기록</button>

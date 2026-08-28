@@ -25,7 +25,7 @@ body {
 .screen {
   max-width: 480px;
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  padding: 14px 16px 20px;
 }
 
 .hidden { display: none !important; }
@@ -36,9 +36,9 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .big-button {
   display: block;
   width: 100%;
-  padding: 16px;
-  margin-top: 20px;
-  font-size: 1.1rem;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #0b1220;
   background: var(--accent);
@@ -55,9 +55,9 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .secondary-button {
   display: block;
   width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  font-size: 1rem;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
   background: var(--panel);
@@ -80,7 +80,7 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .step-indicator {
   display: flex;
   gap: 8px;
-  margin: 16px 0;
+  margin: 10px 0;
 }
 .step {
   flex: 1;
@@ -106,7 +106,7 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .compass-wrap {
   display: flex;
   justify-content: center;
-  margin: 12px 0;
+  margin: 4px 0;
 }
 .compass-label {
   fill: var(--muted);
@@ -123,18 +123,18 @@ p.lead { color: var(--muted); line-height: 1.5; }
 }
 
 .level-panel {
-  margin: 16px 0;
-  padding: 14px;
+  margin: 10px 0;
+  padding: 10px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
-.level-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+.level-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
 
 .bubble-level {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 130px;
+  height: 130px;
   margin: 4px auto 0;
   background: #0b1220;
   border: 2px solid var(--border);
@@ -172,14 +172,29 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .bubble-dot.level-ok { background: var(--ok); }
 .level-status { margin-top: 8px; font-size: 0.85rem; color: var(--muted); text-align: center; }
 
-.steady-check { margin-top: 12px; }
-.steady-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-align: center; }
+.dip-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.dip-readout-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.steady-check { margin-top: 10px; }
+.steady-title { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; text-align: center; }
 .steady-track {
   position: relative;
-  height: 28px;
+  width: 140px;
+  height: 24px;
   background: #0b1220;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .steady-center-mark {
@@ -194,30 +209,28 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .steady-ball {
   position: absolute;
   top: 2px;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--warn);
   left: 50%;
-  transform: translateX(-12px);
+  transform: translateX(-10px);
   transition: left 0.1s linear, background-color 0.2s;
 }
 .steady-ball.level-ok { background: var(--ok); }
 
 .dip-gauge {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: stretch;
-  justify-content: center;
-  margin-top: 4px;
 }
 .dip-gauge-track {
   position: relative;
-  width: 40px;
-  height: 160px;
+  width: 34px;
+  height: 120px;
   background: #0b1220;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 17px;
   overflow: hidden;
 }
 .dip-gauge-fill {
@@ -243,24 +256,16 @@ p.lead { color: var(--muted); line-height: 1.5; }
   flex-direction: column;
   justify-content: space-between;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   padding: 2px 0;
 }
 
-.readout-panel {
-  margin: 16px 0;
-  padding: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  text-align: center;
-}
-.readout-value { font-size: 2.4rem; font-weight: 800; color: var(--accent); }
-.readout-sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.readout-value { font-size: 2.2rem; font-weight: 800; color: var(--accent); }
+.readout-sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
 
 .summary-panel {
-  margin: 16px 0;
-  padding: 14px;
+  margin: 10px 0;
+  padding: 12px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
