@@ -1,5 +1,5 @@
 // 오프라인 사용을 위한 앱 셸 캐싱. 파일을 바꾸면 CACHE_NAME 버전을 올려야 갱신됨.
-const CACHE_NAME = "clinometer-v11";
+const CACHE_NAME = "clinometer-v12";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -30,10 +30,15 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // 온라인일 때는 항상 최신 파일을 받아오고, 실패했을 때(오프라인)만 캐시로 대체한다.
+  // (예전 cache-first 방식은 배포 후에도 예전 화면이 계속 보이는 문제가 있었음.)
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
