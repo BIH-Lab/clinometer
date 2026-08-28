@@ -301,53 +301,26 @@ p.lead { color: var(--muted); line-height: 1.5; }
 .info-box p { color: var(--muted); margin: 8px 0 0; }
 .info-box p:first-of-type { margin-top: 10px; }
 
-textarea#note-input {
+.declination-box {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.declination-box label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.declination-box input {
   width: 100%;
-  margin-top: 10px;
   padding: 10px;
   background: #0b1220;
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-family: inherit;
-  resize: vertical;
-  min-height: 44px;
+  font-size: 1rem;
 }
-
-.records-panel { margin-top: 24px; }
-.records-panel h2 { font-size: 1.05rem; margin-bottom: 8px; }
-.record-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  margin-bottom: 6px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.85rem;
-}
-.record-row .record-symbol {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  background: #0b1220;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.record-row .record-info { flex: 1; }
-.record-row .meta { color: var(--muted); font-size: 0.75rem; }
-.record-row button {
-  background: none;
-  border: none;
-  color: #f87171;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-.export-row { display: flex; gap: 8px; margin-top: 10px; }
-.export-row .secondary-button { margin-top: 0; }
-.empty-note { color: var(--muted); font-size: 0.85rem; }

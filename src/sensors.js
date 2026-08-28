@@ -30,7 +30,10 @@ function normalizeHeading(event) {
     // iOS: 이미 0~360, 시계방향=동쪽 규약.
     return event.webkitCompassHeading;
   }
-  if (typeof event.alpha === "number") {
+  // event.absolute가 true일 때만 alpha가 실제 자북 기준 방위다. false/누락이면
+  // "전원 켤 때 방향" 기준의 상대각일 뿐이라 나침반 값으로 쓸 수 없다 —
+  // 그럴듯한 숫자를 보여주는 대신 null을 반환해 "지원 안 됨"으로 처리한다.
+  if (event.absolute === true && typeof event.alpha === "number") {
     // W3C 규약: alpha는 반시계 증가이므로 시계방향 규약으로 뒤집는다.
     return (360 - event.alpha) % 360;
   }

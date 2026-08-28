@@ -5,6 +5,7 @@ import {
   startListening,
 } from "./sensors.js";
 import {
+  normalizeDeg,
   strikeLineDeg,
   strikeQuadrantLabel,
   dipQuadrantLabel,
@@ -15,7 +16,6 @@ import {
   formatDeg,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
-import { getRecords, addRecord, deleteRecord, exportCSV, exportJSON } from "./storage.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -24,6 +24,8 @@ const mainScreen = el("main-screen");
 const insecureWarning = el("insecure-warning");
 const permissionDenied = el("permission-denied");
 const calibrationBanner = el("calibration-banner");
+const noCompassWarning = el("no-compass-warning");
+const declinationInput = el("declination-input");
 
 const needleGroup = el("needle-group");
 const dipTickGroup = el("dip-tick-group");
@@ -44,19 +46,20 @@ const steadyBall = el("steady-ball");
 const strikeDipSymbol = el("strike-dip-symbol");
 const summaryStrike = el("summary-strike");
 const summaryDip = el("summary-dip");
-const noteInput = el("note-input");
-
-const recordsList = el("records-list");
 
 const BUBBLE_MAX_TILT = 30;
 // 기기가 많이 기울면(경사각을 읽는 중) 나침반 방위 자체의 정확도가 떨어질 수 있으므로,
 // 아직 거의 평평할 때(이 각도 이내) 측정된 방위만 "경사 방향" 후보로 계속 갱신해 사용한다.
 const DIRECTION_LATCH_TILT = 15;
+// 이 시간 동안 방위 값을 한 번도 못 받으면 이 기기/브라우저는 나침반 미지원으로 간주.
+const NO_COMPASS_WARNING_DELAY_MS = 3000;
 
 let step = "strike"; // 'strike' | 'dip' | 'review'
 let latest = { heading: null, tilt: null, frontBack: null, accuracy: null };
 let captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
 let dipDirectionCandidate = null;
+let declinationDeg = 0;
+let noCompassTimer = null;
 
 function setStep(next) {
   step = next;
@@ -113,13 +116,25 @@ function updateSteadyCheck(frontBack) {
   steadyBall.classList.toggle("level-ok", isLevel(frontBack));
 }
 
-function onReading(reading) {
+// 센서가 주는 자북 기준 방위에 편각을 더해 진북 기준 방위로 바꾼다.
+function applyDeclination(reading) {
+  if (typeof reading.heading !== "number") return reading;
+  return { ...reading, heading: normalizeDeg(reading.heading + declinationDeg) };
+}
+
+function onReading(rawReading) {
+  const reading = applyDeclination(rawReading);
   latest = reading;
 
   if (typeof reading.heading === "number") {
     headingReadout.textContent = `${formatDeg(reading.heading)} (${compassLabel(reading.heading)})`;
     el("capture-strike-btn").disabled = false;
     el("capture-dip-btn").disabled = typeof reading.tilt !== "number";
+    noCompassWarning.classList.add("hidden");
+    if (noCompassTimer) {
+      clearTimeout(noCompassTimer);
+      noCompassTimer = null;
+    }
   }
 
   const badAccuracy = typeof reading.accuracy === "number" && reading.accuracy > 15;
@@ -146,6 +161,7 @@ function onReading(reading) {
 async function handleStart() {
   insecureWarning.classList.toggle("hidden", isSecureContextOk());
   permissionDenied.classList.add("hidden");
+  declinationDeg = Number(declinationInput.value) || 0;
 
   if (needsIOSPermission()) {
     const granted = await requestPermission();
@@ -159,8 +175,13 @@ async function handleStart() {
   mainScreen.classList.remove("hidden");
   setStep("strike");
   startListening(onReading);
-  renderRecords();
   registerServiceWorker();
+
+  noCompassTimer = setTimeout(() => {
+    if (typeof latest.heading !== "number") {
+      noCompassWarning.classList.remove("hidden");
+    }
+  }, NO_COMPASS_WARNING_DELAY_MS);
 }
 
 function handleCaptureStrike() {
@@ -200,63 +221,11 @@ function handleCaptureDip() {
   updateCompassVisual();
 }
 
-function handleSave() {
-  if (captured.strikeHeadingDeg === null || captured.dipDeg === null) return;
-  addRecord({
-    strikeDeg: strikeLineDeg(captured.strikeHeadingDeg),
-    dipDeg: captured.dipDeg,
-    dipDirectionDeg: captured.dipDirectionDeg,
-    strikeLabel: strikeQuadrantLabel(captured.strikeHeadingDeg),
-    dipLabel: dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg),
-    note: noteInput.value.trim(),
-  });
-  noteInput.value = "";
-  renderRecords();
-  handleRestart();
-}
-
 function handleRestart() {
   captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
   dipDirectionCandidate = null;
   dipTickGroup.classList.add("hidden");
   setStep("strike");
-}
-
-function renderRecords() {
-  const records = getRecords();
-  recordsList.innerHTML = "";
-  if (records.length === 0) {
-    recordsList.innerHTML = '<p class="empty-note">아직 저장된 측정값이 없습니다.</p>';
-    return;
-  }
-  for (const r of records) {
-    const row = document.createElement("div");
-    row.className = "record-row";
-
-    const symbol = document.createElement("div");
-    symbol.className = "record-symbol";
-    symbol.innerHTML = strikeDipSymbolSVG(r.strikeDeg, r.dipDeg, r.dipDirectionDeg, 36);
-
-    const info = document.createElement("div");
-    info.className = "record-info";
-    const main = document.createElement("div");
-    main.textContent = `주향 ${r.strikeLabel || formatDeg(r.strikeDeg)} · 경사 ${r.dipLabel || formatDeg(r.dipDeg)}`;
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    const time = new Date(r.timestamp).toLocaleString("ko-KR");
-    meta.textContent = r.note ? `${time} · ${r.note}` : time;
-    info.append(main, meta);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "삭제";
-    deleteBtn.addEventListener("click", () => {
-      deleteRecord(r.id);
-      renderRecords();
-    });
-
-    row.append(symbol, info, deleteBtn);
-    recordsList.appendChild(row);
-  }
 }
 
 function registerServiceWorker() {
@@ -269,9 +238,6 @@ el("start-btn").addEventListener("click", handleStart);
 el("capture-strike-btn").addEventListener("click", handleCaptureStrike);
 el("back-to-strike-btn").addEventListener("click", handleBackToStrike);
 el("capture-dip-btn").addEventListener("click", handleCaptureDip);
-el("save-btn").addEventListener("click", handleSave);
 el("restart-btn").addEventListener("click", handleRestart);
-el("export-csv-btn").addEventListener("click", exportCSV);
-el("export-json-btn").addEventListener("click", exportJSON);
 
 insecureWarning.classList.toggle("hidden", isSecureContextOk());

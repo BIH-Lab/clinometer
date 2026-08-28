@@ -22,6 +22,11 @@
     스마트폰을 나침반 겸 경사계로 사용해 암반면의 <b>주향(走向)</b>과 <b>경사(傾斜)</b>를 측정합니다.
     측정을 시작하면 나침반·기울기 센서 사용 권한을 요청합니다.
   </p>
+  <div class="declination-box">
+    <label for="declination-input">자편각 보정 (동편각 +, 서편각 -)</label>
+    <input type="number" id="declination-input" value="0" step="0.5" inputmode="decimal" />
+  </div>
+
   <button id="start-btn" class="big-button">측정 시작</button>
   <div id="insecure-warning" class="warning-banner hidden">
     이 페이지가 HTTPS로 접속되지 않아 센서 권한을 사용할 수 없습니다. GitHub Pages로 배포된 https:// 주소로 접속해주세요.
@@ -54,11 +59,14 @@
   <div id="calibration-banner" class="warning-banner hidden">
     나침반 정확도가 낮습니다. 스마트폰을 8자(∞) 모양으로 흔들어 보정한 뒤 다시 시도하세요. 금속·자성 광물 근처에서는 오차가 커질 수 있습니다.
   </div>
+  <div id="no-compass-warning" class="warning-banner hidden">
+    이 기기/브라우저에서는 나침반(방위) 센서를 지원하지 않는 것 같습니다. 다른 기기나 브라우저(Chrome 등)로 시도해보세요.
+  </div>
 
   <div class="step-indicator">
-    <div class="step" data-step="strike">① 수평 맞추고<br>주향 기록</div>
-    <div class="step" data-step="dip">② 90도 돌려서<br>경사 기록</div>
-    <div class="step" data-step="review">③ 확인 후 저장</div>
+    <div class="step" data-step="strike">① 주향 측정</div>
+    <div class="step" data-step="dip">② 경사 측정</div>
+    <div class="step" data-step="review">③ 결과 확인</div>
   </div>
 
   <div class="compass-wrap">
@@ -135,18 +143,7 @@
         </div>
       </div>
     </div>
-    <textarea id="note-input" placeholder="메모 (지점명, 암종 등, 선택)"></textarea>
-    <button id="save-btn" class="big-button">③ 저장</button>
-    <button id="restart-btn" class="secondary-button">새로 측정</button>
-  </div>
-
-  <div class="records-panel">
-    <h2>측정 기록</h2>
-    <div id="records-list"></div>
-    <div class="export-row">
-      <button id="export-csv-btn" class="secondary-button">CSV 내보내기</button>
-      <button id="export-json-btn" class="secondary-button">JSON 내보내기</button>
-    </div>
+    <button id="restart-btn" class="big-button">새로 측정</button>
   </div>
 </section>
 
