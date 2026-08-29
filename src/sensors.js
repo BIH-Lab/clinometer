@@ -9,6 +9,12 @@ export function isSecureContextOk() {
   return window.isSecureContext === true;
 }
 
+// 이 기기/브라우저가 기기 방향 이벤트 자체를 아예 지원하지 않는지 즉시 확인한다
+// (센서 값이 하나도 안 들어와서 몇 초 기다려봐야 아는 것과 별개로, API 자체의 부재는 바로 알 수 있음).
+export function hasOrientationSupport() {
+  return typeof DeviceOrientationEvent !== "undefined";
+}
+
 export function needsIOSPermission() {
   return typeof DeviceOrientationEvent !== "undefined" &&
     typeof DeviceOrientationEvent.requestPermission === "function";

@@ -2,8 +2,8 @@
 // 수평층: ⊕ / 일반: 긴 선(주향) + 짧은 눈금(경사방향) + 각도 / 수직층: 긴 선만.
 import { HORIZONTAL_DIP_THRESHOLD, VERTICAL_DIP_THRESHOLD } from "./geology.js";
 
-const STROKE = "#e2e8f0";
-const NUM_COLOR = "#94a3b8";
+const STROKE = "#e8dcc4";
+const NUM_COLOR = "#a89d87";
 
 function toXY(centerX, centerY, bearingDeg, length) {
   const rad = (bearingDeg * Math.PI) / 180;

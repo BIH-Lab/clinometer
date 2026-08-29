@@ -3,6 +3,7 @@ import {
   needsIOSPermission,
   requestPermission,
   startListening,
+  hasOrientationSupport,
 } from "./sensors.js";
 import {
   normalizeDeg,
@@ -14,6 +15,8 @@ import {
   dipAngleFromTilt,
   compassLabel,
   formatDeg,
+  smoothHeading,
+  smoothLinear,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
 import { calculateDeclination } from "./declination.js";
@@ -57,8 +60,14 @@ const DIRECTION_LATCH_TILT = 15;
 // 이 시간 동안 방위 값을 한 번도 못 받으면 이 기기/브라우저는 나침반 미지원으로 간주.
 const NO_COMPASS_WARNING_DELAY_MS = 3000;
 
+// 센서값을 부드럽게 하는 정도(원형/선형 지수이동평균의 alpha). 낮을수록 부드럽지만 반응이 느려진다.
+const SMOOTHING_ALPHA = 0.35;
+
 let step = "strike"; // 'strike' | 'dip' | 'review'
 let latest = { heading: null, tilt: null, frontBack: null, accuracy: null };
+let smoothedHeading = null;
+let smoothedTilt = null;
+let smoothedFrontBack = null;
 let captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
 let dipDirectionCandidate = null;
 let declinationDeg = 0;
@@ -125,8 +134,17 @@ function applyDeclination(reading) {
   return { ...reading, heading: normalizeDeg(reading.heading + declinationDeg) };
 }
 
+// 방위/기울기 각각을 이동평균으로 다듬어 손떨림·자북 흔들림에 의한 순간적인
+// 값 튐을 줄인다. 측정(캡처)도 이 다듬어진 값을 기준으로 하므로 정확도에도 도움이 된다.
+function smoothReading(reading) {
+  smoothedHeading = smoothHeading(smoothedHeading, reading.heading, SMOOTHING_ALPHA);
+  smoothedTilt = smoothLinear(smoothedTilt, reading.tilt, SMOOTHING_ALPHA);
+  smoothedFrontBack = smoothLinear(smoothedFrontBack, reading.frontBack, SMOOTHING_ALPHA);
+  return { ...reading, heading: smoothedHeading, tilt: smoothedTilt, frontBack: smoothedFrontBack };
+}
+
 function onReading(rawReading) {
-  const reading = applyDeclination(rawReading);
+  const reading = smoothReading(applyDeclination(rawReading));
   latest = reading;
 
   if (typeof reading.heading === "number") {
@@ -198,9 +216,17 @@ async function handleStart() {
   startScreen.classList.add("hidden");
   mainScreen.classList.remove("hidden");
   setStep("strike");
+  smoothedHeading = null;
+  smoothedTilt = null;
+  smoothedFrontBack = null;
   startListening(onReading);
   registerServiceWorker();
 
+  if (!hasOrientationSupport()) {
+    // API 자체가 없는 기기/브라우저는 몇 초 기다릴 것도 없이 바로 안내한다.
+    noCompassWarning.classList.remove("hidden");
+    return;
+  }
   noCompassTimer = setTimeout(() => {
     if (typeof latest.heading !== "number") {
       noCompassWarning.classList.remove("hidden");

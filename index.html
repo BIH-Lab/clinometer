@@ -4,13 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
 <title>클리노미터 - 주향/경사 측정기</title>
-<meta name="theme-color" content="#0f172a" />
+<meta name="theme-color" content="#1a1712" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="apple-touch-icon" href="./icons/icon.svg" />
 <link rel="icon" href="./icons/icon.svg" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
 <link rel="stylesheet" href="./src/styles.css" />
 </head>
 <body>
@@ -26,7 +28,10 @@
     <label for="declination-input">자편각 보정 (동편각 +, 서편각 -)</label>
     <div class="declination-row">
       <input type="number" id="declination-input" value="0" step="0.5" inputmode="decimal" />
-      <button type="button" id="declination-gps-btn" class="secondary-button">📍 GPS로 계산</button>
+      <button type="button" id="declination-gps-btn" class="secondary-button gps-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        GPS로 계산
+      </button>
     </div>
     <div id="declination-gps-status" class="declination-gps-status"></div>
   </div>
@@ -76,22 +81,52 @@
   </div>
 
   <div class="compass-wrap">
-    <svg width="150" height="150" viewBox="0 0 200 200">
-      <circle cx="100" cy="100" r="90" fill="#0b1220" stroke="#2a3a5c" stroke-width="2" />
+    <svg viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="bezel" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#e8c481"/>
+          <stop offset="55%" stop-color="#b8873f"/>
+          <stop offset="100%" stop-color="#7a5a26"/>
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="92" fill="none" stroke="url(#bezel)" stroke-width="6" />
+      <circle cx="100" cy="100" r="83" fill="#161209" stroke="#3a3226" stroke-width="1" />
       <!-- 고정 배경판: N/E/S/W는 움직이지 않음 (E/W는 일반 나침반과 반대로 배치) -->
-      <text class="compass-label" x="100" y="24">N</text>
-      <text class="compass-label" x="24" y="105">E</text>
-      <text class="compass-label" x="100" y="182">S</text>
-      <text class="compass-label" x="176" y="105">W</text>
-      <!-- 회전하는 바늘: 폰이 지금 향하는 방향(=측정 중인 주향), 끝이 빨간색 -->
+      <g stroke="#c9a35c" stroke-width="2" stroke-linecap="round" opacity="0.55">
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(15 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(30 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="28" transform="rotate(45 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(60 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(75 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(105 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(120 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="28" transform="rotate(135 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(150 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(165 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(195 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(210 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="28" transform="rotate(225 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(240 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(255 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(285 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(300 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="28" transform="rotate(315 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(330 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="22" transform="rotate(345 100 100)"/>
+      </g>
+      <text class="compass-label compass-label-n" x="100" y="34">N</text>
+      <text class="compass-label" x="34" y="106">E</text>
+      <text class="compass-label" x="100" y="176">S</text>
+      <text class="compass-label" x="166" y="106">W</text>
+      <!-- 회전하는 바늘: 폰이 지금 향하는 방향(=측정 중인 주향) -->
       <g id="needle-group">
-        <line x1="100" y1="16" x2="100" y2="184" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
-        <polygon points="100,10 94,22 106,22" fill="#ef4444" />
+        <polygon points="100,100 96,102 100,18 104,102" fill="#b23a2f" />
+        <polygon points="100,100 96,98 100,182 104,98" fill="#e8dcc4" opacity="0.85" />
         <g id="dip-tick-group" class="hidden">
-          <line x1="100" y1="100" x2="100" y2="58" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
+          <line x1="100" y1="100" x2="100" y2="58" stroke="#7a92a3" stroke-width="4" stroke-linecap="round" />
         </g>
       </g>
-      <circle cx="100" cy="100" r="4" fill="#e2e8f0" />
+      <circle cx="100" cy="100" r="5.5" fill="#e8c481" stroke="#7a5a26" stroke-width="1" />
     </svg>
   </div>
   <p class="readout-sub" style="text-align:center;">

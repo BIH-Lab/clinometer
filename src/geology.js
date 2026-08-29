@@ -74,3 +74,19 @@ export function snapDipDirection(strikeHeadingDeg, rawDipDirectionDeg) {
     ? plus90
     : minus90;
 }
+
+// 0~360 방위값에 대한 원형 지수이동평균(EMA). 0/360 경계를 자연스럽게 넘어가면서
+// 자북 흔들림으로 인한 순간적인 값 튐을 줄인다. alpha가 클수록 더 빠르게(덜 부드럽게) 따라간다.
+export function smoothHeading(prevHeadingDeg, rawHeadingDeg, alpha = 0.35) {
+  if (typeof rawHeadingDeg !== "number") return prevHeadingDeg;
+  if (typeof prevHeadingDeg !== "number") return rawHeadingDeg;
+  const diff = ((rawHeadingDeg - prevHeadingDeg + 540) % 360) - 180; // -180..180 최단 회전각
+  return normalizeDeg(prevHeadingDeg + alpha * diff);
+}
+
+// 일반 값(기울기 등)에 대한 지수이동평균.
+export function smoothLinear(prevValue, rawValue, alpha = 0.35) {
+  if (typeof rawValue !== "number") return prevValue;
+  if (typeof prevValue !== "number") return rawValue;
+  return prevValue + alpha * (rawValue - prevValue);
+}
