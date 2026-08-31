@@ -17,7 +17,6 @@ import {
   formatDeg,
   smoothHeading,
   smoothLinear,
-  angularDifference,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
 import { calculateDeclination } from "./declination.js";
@@ -60,6 +59,9 @@ const BUBBLE_MAX_TILT = 30;
 const YAW_MAX_DEVIATION = 30;
 // 방위 드리프트를 "문제 없음"으로 볼 허용 오차(도). 좌우/앞뒤 기울기보다는 나침반 잡음이 있어 조금 더 넉넉하게 잡는다.
 const YAW_TOLERANCE_DEG = 5;
+// 이 시간(ms) 동안 방위가 얼마나 변했는지를 "지금 회전 중인지"의 기준으로 삼는다.
+// 경사각(기울기) 크기와는 무관하게, 완만한 경사를 잴 때도 항상 똑같이 동작한다.
+const YAW_WINDOW_MS = 500;
 // 기기가 많이 기울면(경사각을 읽는 중) 나침반 방위 자체의 정확도가 떨어질 수 있으므로,
 // 아직 거의 평평할 때(이 각도 이내) 측정된 방위만 "경사 방향" 후보로 계속 갱신해 사용한다.
 const DIRECTION_LATCH_TILT = 15;
@@ -79,6 +81,8 @@ let dipDirectionCandidate = null;
 // 기울기가 임계값을 한 번이라도 넘으면 true로 굳어져, 이후 손떨림으로 기울기가
 // 다시 임계값 아래로 잠깐 내려가더라도 방향 기준값이 다시 풀리지 않는다.
 let dipDirectionLocked = false;
+// "방위(회전) 유지" 막대용: 최근 YAW_WINDOW_MS 동안의 (시각, 방위) 기록.
+let yawHistory = [];
 let declinationDeg = 0;
 let noCompassTimer = null;
 
@@ -137,20 +141,35 @@ function updateSteadyCheck(frontBack) {
   steadyBall.classList.toggle("level-ok", isLevel(frontBack));
 }
 
-// 폰이 그 자리에서 좌우로 돌아가버리지(요잉) 않았는지, 방향을 잡아둔 기준값과 비교해 항상 실시간으로 보여준다.
-// (기울기가 작을 때는 기준값 자체가 지금 방위를 계속 따라가므로 자연히 가운데 근처에 머문다.)
-function updateYawCheck(heading, reference) {
-  if (typeof heading !== "number" || typeof reference !== "number") {
+// 폰이 그 자리에서 좌우로 돌아가버리지(요잉) 않았는지 확인한다.
+// 특정 순간에 방향을 "고정"해서 비교하지 않고, 최근 YAW_WINDOW_MS 동안 방위가
+// 얼마나 변했는지를 항상 실시간으로 보여준다 — 경사각(기울기)이 크든 작든 똑같이 동작한다.
+function updateYawCheck(heading) {
+  const now = Date.now();
+  if (typeof heading !== "number") {
+    yawHistory = [];
     yawBall.style.left = "50%";
     yawBall.classList.remove("level-ok");
     yawBall.classList.add("neutral");
     return;
   }
-  const signedDiff = ((heading - reference + 540) % 360) - 180;
+  yawHistory.push({ t: now, heading });
+  while (yawHistory.length > 1 && now - yawHistory[0].t > YAW_WINDOW_MS) {
+    yawHistory.shift();
+  }
+  const oldest = yawHistory[0];
+  if (now - oldest.t < YAW_WINDOW_MS / 2) {
+    // 기록이 아직 충분히 쌓이지 않은 초반(예: 방금 경사 단계에 들어온 직후)에는 판단을 미룬다.
+    yawBall.style.left = "50%";
+    yawBall.classList.remove("level-ok");
+    yawBall.classList.add("neutral");
+    return;
+  }
+  const signedDiff = ((heading - oldest.heading + 540) % 360) - 180;
   const clamped = Math.max(-YAW_MAX_DEVIATION, Math.min(YAW_MAX_DEVIATION, signedDiff));
   yawBall.style.left = `${50 + (clamped / YAW_MAX_DEVIATION) * 44}%`;
   yawBall.classList.remove("neutral");
-  yawBall.classList.toggle("level-ok", angularDifference(heading, reference) <= YAW_TOLERANCE_DEG);
+  yawBall.classList.toggle("level-ok", Math.abs(signedDiff) <= YAW_TOLERANCE_DEG);
 }
 
 // 센서가 주는 자북 기준 방위에 편각을 더해 진북 기준 방위로 바꾼다.
@@ -200,8 +219,8 @@ function onReading(rawReading) {
         dipDirectionLocked = true;
       }
     }
-    // 방위가 잡아둔 기준값에서 그대로 유지되고 있는지(회전하지 않았는지) 실시간으로 확인한다.
-    updateYawCheck(reading.heading, dipDirectionCandidate);
+    // 방위가 최근 잠깐 사이에 얼마나 변했는지(회전하지 않았는지) 실시간으로 확인한다.
+    updateYawCheck(reading.heading);
   }
 
   updateCompassVisual();
@@ -267,6 +286,7 @@ function handleCaptureStrike() {
   captured.strikeHeadingDeg = latest.heading;
   dipDirectionCandidate = null;
   dipDirectionLocked = false;
+  yawHistory = [];
   setStep("dip");
   updateCompassVisual();
 }
@@ -276,6 +296,7 @@ function handleBackToStrike() {
   captured.dipDirectionDeg = null;
   dipDirectionCandidate = null;
   dipDirectionLocked = false;
+  yawHistory = [];
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
@@ -305,6 +326,7 @@ function handleRestart() {
   captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
   dipDirectionCandidate = null;
   dipDirectionLocked = false;
+  yawHistory = [];
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
