@@ -56,7 +56,8 @@ export function dipQuadrantLabel(dipDeg, dipDirectionDeg) {
   return `${Math.round(dipDeg)}°${compassLabel(dipDirectionDeg)}`;
 }
 
-function angularDifference(a, b) {
+// 두 방위값의 최단 각도 차이(0~180, 방향 없음).
+export function angularDifference(a, b) {
   const diff = Math.abs(normalizeDeg(a) - normalizeDeg(b)) % 360;
   return diff > 180 ? 360 - diff : diff;
 }

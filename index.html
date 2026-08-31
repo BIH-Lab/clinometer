@@ -78,6 +78,7 @@
       수평면에서 얼마나 기울었는지의 각도(0~90°)입니다. <b>30°SE</b>는 남동쪽으로 30도 기울었다는 뜻입니다.
       측정할 때는 먼저 평평한 상태로 90도 돌려 방향을 맞춘 뒤 기울여서 각도를 읽으세요
       (많이 기울면 나침반 방위가 부정확해질 수 있어 방향은 평평했을 때 값을 자동으로 사용합니다).
+      각도를 읽는 동안에는 앞뒤 기울기·방위(회전) 확인 막대가 둘 다 초록색을 유지하도록 폰을 고정해주세요.
     </p>
     <p>
       지질도에서는 <b>긴 선</b>으로 주향을, <b>짧은 눈금</b>으로 경사가 내려가는 방향을, <b>숫자</b>로 경사각을
@@ -182,11 +183,20 @@
       <div class="dip-readout-col">
         <div class="readout-value" id="dip-readout">0°</div>
         <div class="readout-sub">경사 각도</div>
-        <div class="steady-check">
-          <div class="steady-title">방향 유지 확인</div>
-          <div class="steady-track">
-            <div class="steady-center-mark"></div>
-            <div id="steady-ball" class="steady-ball"></div>
+        <div class="steady-group">
+          <div class="steady-check">
+            <div class="steady-title">앞뒤 기울기 유지</div>
+            <div class="steady-track">
+              <div class="steady-center-mark"></div>
+              <div id="steady-ball" class="steady-ball"></div>
+            </div>
+          </div>
+          <div class="steady-check">
+            <div class="steady-title">방위(회전) 유지</div>
+            <div class="steady-track">
+              <div class="steady-center-mark"></div>
+              <div id="yaw-ball" class="steady-ball neutral"></div>
+            </div>
           </div>
         </div>
       </div>

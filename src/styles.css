@@ -219,15 +219,21 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
   align-items: center;
 }
 
-.steady-check { margin-top: 10px; }
-.steady-title { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; text-align: center; }
+.steady-group {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.steady-check { margin-top: 0; }
+.steady-title { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; text-align: center; }
 .steady-track {
   position: relative;
-  width: clamp(120px, 36vw, 150px);
-  height: 24px;
+  width: clamp(110px, 34vw, 140px);
+  height: 20px;
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
 }
 .steady-center-mark {
@@ -241,16 +247,17 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
 }
 .steady-ball {
   position: absolute;
-  top: 2px;
-  width: 20px;
-  height: 20px;
+  top: 1px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--warn);
   left: 50%;
-  transform: translateX(-10px);
+  transform: translateX(-8px);
   transition: left 0.1s linear, background-color 0.2s;
 }
 .steady-ball.level-ok { background: var(--ok); }
+.steady-ball.neutral { background: #6f6552; }
 
 .dip-gauge {
   display: flex;

@@ -17,6 +17,7 @@ import {
   formatDeg,
   smoothHeading,
   smoothLinear,
+  angularDifference,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
 import { calculateDeclination } from "./declination.js";
@@ -48,12 +49,17 @@ const dipReadout = el("dip-readout");
 const dipGaugeFill = el("dip-gauge-fill");
 const dipGaugeMarker = el("dip-gauge-marker");
 const steadyBall = el("steady-ball");
+const yawBall = el("yaw-ball");
 
 const strikeDipSymbol = el("strike-dip-symbol");
 const summaryStrike = el("summary-strike");
 const summaryDip = el("summary-dip");
 
 const BUBBLE_MAX_TILT = 30;
+// 방위(회전) 유지 확인 막대의 표시 범위(도). 이 이상 벗어나면 막대 끝까지 밀린 채로 표시된다.
+const YAW_MAX_DEVIATION = 30;
+// 방위 드리프트를 "문제 없음"으로 볼 허용 오차(도). 좌우/앞뒤 기울기보다는 나침반 잡음이 있어 조금 더 넉넉하게 잡는다.
+const YAW_TOLERANCE_DEG = 5;
 // 기기가 많이 기울면(경사각을 읽는 중) 나침반 방위 자체의 정확도가 떨어질 수 있으므로,
 // 아직 거의 평평할 때(이 각도 이내) 측정된 방위만 "경사 방향" 후보로 계속 갱신해 사용한다.
 const DIRECTION_LATCH_TILT = 15;
@@ -128,6 +134,23 @@ function updateSteadyCheck(frontBack) {
   steadyBall.classList.toggle("level-ok", isLevel(frontBack));
 }
 
+// 경사를 읽는 동안(많이 기울어진 뒤) 폰이 그 자리에서 좌우로 돌아가버리지(요잉) 않았는지 확인.
+// 아직 방향만 맞추는 중(기울기가 작을 때)에는 회전이 당연한 것이므로 검사하지 않는다.
+function updateYawCheck(heading, reference, tiltAbs) {
+  const armed = tiltAbs > DIRECTION_LATCH_TILT && typeof heading === "number" && typeof reference === "number";
+  if (!armed) {
+    yawBall.style.left = "50%";
+    yawBall.classList.remove("level-ok");
+    yawBall.classList.add("neutral");
+    return;
+  }
+  const signedDiff = ((heading - reference + 540) % 360) - 180;
+  const clamped = Math.max(-YAW_MAX_DEVIATION, Math.min(YAW_MAX_DEVIATION, signedDiff));
+  yawBall.style.left = `${50 + (clamped / YAW_MAX_DEVIATION) * 44}%`;
+  yawBall.classList.remove("neutral");
+  yawBall.classList.toggle("level-ok", angularDifference(heading, reference) <= YAW_TOLERANCE_DEG);
+}
+
 // 센서가 주는 자북 기준 방위에 편각을 더해 진북 기준 방위로 바꾼다.
 function applyDeclination(reading) {
   if (typeof reading.heading !== "number") return reading;
@@ -166,14 +189,14 @@ function onReading(rawReading) {
   } else if (step === "dip") {
     updateDipGauge(dipAngleFromTilt(reading.tilt));
     updateSteadyCheck(reading.frontBack);
-    if (
-      typeof reading.heading === "number" &&
-      typeof reading.tilt === "number" &&
-      Math.abs(reading.tilt) <= DIRECTION_LATCH_TILT
-    ) {
+    const tiltAbs = typeof reading.tilt === "number" ? Math.abs(reading.tilt) : 0;
+    if (typeof reading.heading === "number" && tiltAbs <= DIRECTION_LATCH_TILT) {
       // 아직 많이 기울기 전(방향만 맞추는 중)의 방위를 계속 최신값으로 잡아둔다.
       dipDirectionCandidate = reading.heading;
     }
+    // 기울기가 커진 뒤(방향을 다 맞춘 뒤)부터는 그 시점에 잡아둔 방위를 기준으로,
+    // 지금 방위가 그대로 유지되고 있는지(회전하지 않았는지) 확인한다.
+    updateYawCheck(reading.heading, dipDirectionCandidate, tiltAbs);
   }
 
   updateCompassVisual();
