@@ -76,6 +76,9 @@ let smoothedTilt = null;
 let smoothedFrontBack = null;
 let captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
 let dipDirectionCandidate = null;
+// 기울기가 임계값을 한 번이라도 넘으면 true로 굳어져, 이후 손떨림으로 기울기가
+// 다시 임계값 아래로 잠깐 내려가더라도 방향 기준값이 다시 풀리지 않는다.
+let dipDirectionLocked = false;
 let declinationDeg = 0;
 let noCompassTimer = null;
 
@@ -189,10 +192,13 @@ function onReading(rawReading) {
     updateDipGauge(dipAngleFromTilt(reading.tilt));
     updateSteadyCheck(reading.frontBack);
     const tiltAbs = typeof reading.tilt === "number" ? Math.abs(reading.tilt) : 0;
-    if (typeof reading.heading === "number" && (tiltAbs <= DIRECTION_LATCH_TILT || dipDirectionCandidate === null)) {
-      // 아직 많이 기울기 전(방향만 맞추는 중)의 방위를 계속 최신값으로 잡아둔다.
-      // (기울기가 이미 큰 상태로 경사 단계에 들어온 경우를 대비해, 값이 아직 하나도 없으면 그때도 잡아둔다.)
+    if (typeof reading.heading === "number" && !dipDirectionLocked) {
+      // 아직 방향 기준이 굳지 않은 동안(=한 번도 크게 기울인 적 없는 동안)에는 최신 방위를 계속 잡아둔다.
       dipDirectionCandidate = reading.heading;
+      if (tiltAbs > DIRECTION_LATCH_TILT) {
+        // 임계값을 처음 넘는 순간 그대로 굳힌다 — 손떨림으로 다시 아래로 내려가도 안 풀린다.
+        dipDirectionLocked = true;
+      }
     }
     // 방위가 잡아둔 기준값에서 그대로 유지되고 있는지(회전하지 않았는지) 실시간으로 확인한다.
     updateYawCheck(reading.heading, dipDirectionCandidate);
@@ -260,6 +266,7 @@ function handleCaptureStrike() {
   if (typeof latest.heading !== "number") return;
   captured.strikeHeadingDeg = latest.heading;
   dipDirectionCandidate = null;
+  dipDirectionLocked = false;
   setStep("dip");
   updateCompassVisual();
 }
@@ -268,6 +275,7 @@ function handleBackToStrike() {
   captured.dipDeg = null;
   captured.dipDirectionDeg = null;
   dipDirectionCandidate = null;
+  dipDirectionLocked = false;
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
@@ -296,6 +304,7 @@ function handleCaptureDip() {
 function handleRestart() {
   captured = { strikeHeadingDeg: null, dipDeg: null, dipDirectionDeg: null };
   dipDirectionCandidate = null;
+  dipDirectionLocked = false;
   dipTickGroup.classList.add("hidden");
   setStep("strike");
 }
