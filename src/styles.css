@@ -315,6 +315,11 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
 .summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-family: var(--font-mono); }
 .summary-row .label { color: var(--muted); font-family: var(--font-body); }
 .summary-row .value { font-weight: 600; color: var(--accent-strong); }
+.summary-row .value.not-applicable {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
 
 .symbol-row { display: flex; align-items: center; gap: 16px; }
 .symbol-box {

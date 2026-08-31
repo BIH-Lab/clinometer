@@ -17,6 +17,7 @@ import {
   formatDeg,
   smoothHeading,
   smoothLinear,
+  HORIZONTAL_DIP_THRESHOLD,
 } from "./geology.js";
 import { strikeDipSymbolSVG } from "./symbol.js";
 import { calculateDeclination } from "./declination.js";
@@ -309,13 +310,19 @@ function handleCaptureDip() {
   const directionSource = dipDirectionCandidate !== null ? dipDirectionCandidate : latest.heading;
   captured.dipDirectionDeg = snapDipDirection(captured.strikeHeadingDeg, directionSource);
 
-  summaryStrike.textContent = strikeQuadrantLabel(captured.strikeHeadingDeg);
+  const strikeLabel = strikeQuadrantLabel(captured.strikeHeadingDeg);
+  const isHorizontal = captured.dipDeg <= HORIZONTAL_DIP_THRESHOLD;
+
+  summaryStrike.textContent = strikeLabel;
+  // 수평층은 어느 방향이나 수평이라 주향 자체가 의미 없으므로 취소선으로 표시한다.
+  summaryStrike.classList.toggle("not-applicable", isHorizontal);
   summaryDip.textContent = dipQuadrantLabel(captured.dipDeg, captured.dipDirectionDeg);
   strikeDipSymbol.innerHTML = strikeDipSymbolSVG(
     strikeLineDeg(captured.strikeHeadingDeg),
     captured.dipDeg,
     captured.dipDirectionDeg,
-    64
+    64,
+    isHorizontal ? null : strikeLabel
   );
 
   setStep("review");

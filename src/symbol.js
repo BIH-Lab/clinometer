@@ -14,15 +14,17 @@ function toXY(centerX, centerY, bearingDeg, length) {
 }
 
 // strikeLineDeg: 0~180 (주향선의 두 방위 중 하나), dipDirectionDeg: 0~360 (경사가 내려가는 방향)
-export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size = 64) {
+// strikeLabel: "N60°E"처럼 화면에 표시할 주향 표기(선택). 넘기면 주향선 옆에 함께 그려준다.
+export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size = 64, strikeLabel = null) {
   const c = size / 2;
-  const lineHalf = size * 0.38;
+  const lineHalf = size * 0.35;
 
   if (typeof dipDeg !== "number") {
     return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"></svg>`;
   }
 
   if (dipDeg <= HORIZONTAL_DIP_THRESHOLD) {
+    // 수평층: 주향이 정의되지 않으므로(어느 방향이나 수평) 표준 기호(원+십자)만 그린다.
     const r = lineHalf * 0.6;
     return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
       <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${STROKE}" stroke-width="2.5"/>
@@ -35,6 +37,12 @@ export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size 
   const p2 = toXY(c, c, strikeLineDeg + 180, lineHalf);
   const lineSvg = `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
 
+  let strikeLabelSvg = "";
+  if (strikeLabel) {
+    const labelPos = toXY(c, c, strikeLineDeg, lineHalf + size * 0.12);
+    strikeLabelSvg = `<text x="${labelPos.x.toFixed(1)}" y="${labelPos.y.toFixed(1)}" fill="${NUM_COLOR}" font-size="${size * 0.14}" text-anchor="middle" dominant-baseline="middle">${strikeLabel}</text>`;
+  }
+
   const tickLen = lineHalf * 0.55;
 
   if (dipDeg >= VERTICAL_DIP_THRESHOLD) {
@@ -42,7 +50,7 @@ export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size 
     const tickA = toXY(c, c, dipDirectionDeg, tickLen);
     const tickB = toXY(c, c, dipDirectionDeg + 180, tickLen);
     const bothTicksSvg = `<line x1="${tickA.x.toFixed(1)}" y1="${tickA.y.toFixed(1)}" x2="${tickB.x.toFixed(1)}" y2="${tickB.y.toFixed(1)}" stroke="${STROKE}" stroke-width="2.5"/>`;
-    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}${bothTicksSvg}</svg>`;
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}${bothTicksSvg}${strikeLabelSvg}</svg>`;
   }
 
   const tick = toXY(c, c, dipDirectionDeg, tickLen);
@@ -50,5 +58,5 @@ export function strikeDipSymbolSVG(strikeLineDeg, dipDeg, dipDirectionDeg, size 
   const numPos = toXY(c, c, dipDirectionDeg, tickLen * 1.45);
   const numSvg = `<text x="${numPos.x.toFixed(1)}" y="${numPos.y.toFixed(1)}" fill="${NUM_COLOR}" font-size="11" text-anchor="middle" dominant-baseline="middle">${Math.round(dipDeg)}</text>`;
 
-  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}${tickSvg}${numSvg}</svg>`;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${lineSvg}${tickSvg}${numSvg}${strikeLabelSvg}</svg>`;
 }
