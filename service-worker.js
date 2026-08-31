@@ -1,5 +1,5 @@
 // 오프라인 사용을 위한 앱 셸 캐싱. 파일을 바꾸면 CACHE_NAME 버전을 올려야 갱신됨.
-const CACHE_NAME = "clinometer-v18";
+const CACHE_NAME = "clinometer-v19";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -133,8 +133,8 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
   margin: 4px 0;
 }
 .compass-wrap svg {
-  width: clamp(130px, 38vw, 172px);
-  height: clamp(130px, 38vw, 172px);
+  width: clamp(260px, 76vw, 344px);
+  height: clamp(260px, 76vw, 344px);
 }
 .compass-label {
   fill: var(--needle-tail);
