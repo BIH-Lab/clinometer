@@ -342,6 +342,7 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
 }
 .info-box p { color: var(--muted); margin: 8px 0 0; }
 .info-box p:first-of-type { margin-top: 10px; }
+.diagram-wrap { display: flex; justify-content: center; margin-top: 10px; }
 
 .declination-box {
   margin-top: 16px;

@@ -36,6 +36,29 @@
     <div id="declination-gps-status" class="declination-gps-status"></div>
   </div>
 
+  <details class="info-box">
+    <summary>자편각이란?</summary>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 160 160" width="140" height="140">
+        <line x1="80" y1="140" x2="80" y2="30" stroke="#e8dcc4" stroke-width="2" stroke-dasharray="4 4" />
+        <text x="80" y="22" text-anchor="middle" font-size="12" fill="#e8dcc4">진북</text>
+        <g transform="rotate(18 80 140)">
+          <line x1="80" y1="140" x2="80" y2="35" stroke="#b23a2f" stroke-width="3" stroke-linecap="round" />
+          <polygon points="80,28 74,41 86,41" fill="#b23a2f" />
+        </g>
+        <text x="122" y="30" text-anchor="start" font-size="12" fill="#b23a2f">자북</text>
+        <path d="M 80 110 A 30 30 0 0 1 89.3 111.5" fill="none" stroke="#c9a35c" stroke-width="1.5" />
+        <text x="92" y="100" text-anchor="start" font-size="11" fill="#c9a35c">편각</text>
+        <circle cx="80" cy="140" r="3" fill="#c9a35c" />
+      </svg>
+    </div>
+    <p>
+      나침반 바늘이 가리키는 <b>자북</b>(빨간 선)과 지도가 기준으로 삼는 <b>진북</b>(점선)은 위치마다 몇 도씩
+      차이가 납니다. 이 차이를 <b>자편각</b>이라 하며, 보정하지 않으면 나침반으로 읽은 방위가 실제 지도의
+      방위와 어긋나게 됩니다. 위 그림은 예시이며 실제 각도는 지역마다 다릅니다.
+    </p>
+  </details>
+
   <button id="start-btn" class="big-button">측정 시작</button>
   <div id="insecure-warning" class="warning-banner hidden">
     이 페이지가 HTTPS로 접속되지 않아 센서 권한을 사용할 수 없습니다. GitHub Pages로 배포된 https:// 주소로 접속해주세요.
