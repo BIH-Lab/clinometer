@@ -13,9 +13,9 @@
   --sensor: #7a92a3;
   --ok: #7a9b57;
   --warn: #d4a24c;
-  --font-display: "Spectral", Georgia, serif;
+  --font-display: "Nanum Myeongjo", Georgia, serif;
   --font-mono: "IBM Plex Mono", "Courier New", monospace;
-  --font-body: "IBM Plex Sans", -apple-system, "Malgun Gothic", sans-serif;
+  --font-body: "Nanum Gothic", -apple-system, "Malgun Gothic", sans-serif;
   font-size: 16px;
 }
 
