@@ -30,36 +30,6 @@
 
 ---
 
-## 개발자 정보
+## 출처
 
-이 저장소를 포크하거나 직접 배포/수정하려는 분들을 위한 내용입니다. 위 사용법만 필요하다면 여기부터는 안 보셔도 됩니다.
-
-### 배포 (GitHub Pages)
-
-1. 이 폴더를 GitHub 저장소에 push합니다 (`index.html`이 저장소 루트에 있어야 함).
-2. 저장소 **Settings → Pages → Source**: "Deploy from a branch" → `main` 브랜치, `/ (root)` 선택.
-3. 몇 분 뒤 `https://<사용자명>.github.io/<저장소명>/` 주소로 접속 가능합니다. GitHub Pages는 HTTPS를 자동으로 제공합니다.
-
-### 기술 스택
-
-빌드 과정 없는 순수 HTML/CSS/JS (ES 모듈), 백엔드·데이터베이스 없음. 주요 파일: `index.html`, `src/app.js`(화면 흐름), `src/sensors.js`(센서 처리), `src/geology.js`(주향/경사 계산), `src/symbol.js`(지질도 기호 렌더링), `src/declination.js` + `src/wmm-coefficients.js`(편각 계산), `service-worker.js`(오프라인 캐시).
-
-### 센서(나침반·기울기) 처리 전략
-
-스마트폰마다 나침반(자기장)·기울기 센서를 노출하는 방식이 달라서, 기기별로 다음과 같이 분기해 처리합니다 (`src/sensors.js`).
-
-| 플랫폼 | 방위(나침반) 소스 | 권한 | 정확도 확인 |
-|---|---|---|---|
-| iOS Safari | `event.webkitCompassHeading` (이미 자북 보정, 시계방향 증가) | `DeviceOrientationEvent.requestPermission()`을 반드시 버튼 클릭 안에서 호출 | `event.webkitCompassAccuracy` 확인 가능 → 15도 넘으면 보정 배너 표시 |
-| Android Chrome 등 (절대 방위 지원) | `deviceorientationabsolute` 이벤트의 `alpha` (`event.absolute === true`일 때만) | 별도 권한 요청 없음 | 브라우저가 정확도를 노출하지 않아 배너를 띄울 수 없음 |
-| 절대 방위 미지원 기기/브라우저 | 없음 — `event.alpha`가 있어도 `absolute`가 아니면 신뢰하지 않고 방위를 `null`로 둠 | - | API 자체가 없으면 즉시, 아니면 3초 내 미수신 시 "나침반 미지원" 경고 |
-
-핵심 원칙은 **"그럴듯해 보이지만 틀린 값"을 절대 보여주지 않는 것**입니다. `event.absolute`가 확실히 `true`이거나 iOS의 `webkitCompassHeading`이 있을 때만 방위 값을 신뢰하고, 그렇지 않으면 값을 비워(`null`) 버튼을 비활성화합니다.
-
-경사 방향은 주향→경사 전환 시 아직 평평한 상태(기울기 15도 이내)일 때의 방위를 계속 붙잡아두는 방식으로 결정합니다(나침반은 기기가 많이 기울면 오차가 커지므로). 또한 방위·좌우/앞뒤 기울기 각각에 지수이동평균(EMA, `alpha=0.35`)을 적용해 손떨림·자북 흔들림에 의한 순간적인 값 튐을 줄이며(`geology.js`의 `smoothHeading`/`smoothLinear`), 측정(캡처) 값도 이 다듬어진 값을 기준으로 합니다.
-
-**한계**: 자이로스코프까지 결합한 본격적인 센서 퓨전(칼만 필터 등)은 없고 단순 EMA 수준이며, Android는 표준 API상 나침반 정확도를 웹에 노출하지 않습니다. 다양한 실기기(특히 저가형 안드로이드, 구형 iOS) 검증이 아직 부족하므로 배포 후에도 기종별 이상 동작 제보를 계속 반영해야 합니다.
-
-### 출처
-
-`src/declination.js`, `src/wmm-coefficients.js`의 자편각 계산 로직과 WMM 2025-2030 계수는 [dpyeates/magvar](https://github.com/dpyeates/magvar) (MIT License, Copyright (c) 2025 Darren Yeates)를 이 프로젝트의 ES 모듈 구조에 맞게 옮겨온 것입니다.
+자편각(자북/진북 차이) 계산에 쓰인 World Magnetic Model 2025-2030 계수와 계산 로직(`src/declination.js`, `src/wmm-coefficients.js`)은 [dpyeates/magvar](https://github.com/dpyeates/magvar) (MIT License, Copyright (c) 2025 Darren Yeates)를 이 프로젝트 구조에 맞게 옮겨온 것입니다.
