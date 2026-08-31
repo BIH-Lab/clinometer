@@ -134,11 +134,10 @@ function updateSteadyCheck(frontBack) {
   steadyBall.classList.toggle("level-ok", isLevel(frontBack));
 }
 
-// 경사를 읽는 동안(많이 기울어진 뒤) 폰이 그 자리에서 좌우로 돌아가버리지(요잉) 않았는지 확인.
-// 아직 방향만 맞추는 중(기울기가 작을 때)에는 회전이 당연한 것이므로 검사하지 않는다.
-function updateYawCheck(heading, reference, tiltAbs) {
-  const armed = tiltAbs > DIRECTION_LATCH_TILT && typeof heading === "number" && typeof reference === "number";
-  if (!armed) {
+// 폰이 그 자리에서 좌우로 돌아가버리지(요잉) 않았는지, 방향을 잡아둔 기준값과 비교해 항상 실시간으로 보여준다.
+// (기울기가 작을 때는 기준값 자체가 지금 방위를 계속 따라가므로 자연히 가운데 근처에 머문다.)
+function updateYawCheck(heading, reference) {
+  if (typeof heading !== "number" || typeof reference !== "number") {
     yawBall.style.left = "50%";
     yawBall.classList.remove("level-ok");
     yawBall.classList.add("neutral");
@@ -190,13 +189,13 @@ function onReading(rawReading) {
     updateDipGauge(dipAngleFromTilt(reading.tilt));
     updateSteadyCheck(reading.frontBack);
     const tiltAbs = typeof reading.tilt === "number" ? Math.abs(reading.tilt) : 0;
-    if (typeof reading.heading === "number" && tiltAbs <= DIRECTION_LATCH_TILT) {
+    if (typeof reading.heading === "number" && (tiltAbs <= DIRECTION_LATCH_TILT || dipDirectionCandidate === null)) {
       // 아직 많이 기울기 전(방향만 맞추는 중)의 방위를 계속 최신값으로 잡아둔다.
+      // (기울기가 이미 큰 상태로 경사 단계에 들어온 경우를 대비해, 값이 아직 하나도 없으면 그때도 잡아둔다.)
       dipDirectionCandidate = reading.heading;
     }
-    // 기울기가 커진 뒤(방향을 다 맞춘 뒤)부터는 그 시점에 잡아둔 방위를 기준으로,
-    // 지금 방위가 그대로 유지되고 있는지(회전하지 않았는지) 확인한다.
-    updateYawCheck(reading.heading, dipDirectionCandidate, tiltAbs);
+    // 방위가 잡아둔 기준값에서 그대로 유지되고 있는지(회전하지 않았는지) 실시간으로 확인한다.
+    updateYawCheck(reading.heading, dipDirectionCandidate);
   }
 
   updateCompassVisual();
