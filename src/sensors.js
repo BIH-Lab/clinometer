@@ -31,15 +31,18 @@ export async function requestPermission() {
   }
 }
 
-function normalizeHeading(event) {
+// trustAbsolute: 이 이벤트가 deviceorientationabsolute 리스너로 들어온 것이면 true.
+// 그 이벤트 타입 자체가 "절대 방위"라는 강한 신호이므로, 일부 안드로이드/웹뷰 버전에서
+// event.absolute 값 자체가 false/누락으로 오는 알려진 결함이 있어도 무시하고 신뢰한다.
+function normalizeHeading(event, trustAbsolute) {
   if (typeof event.webkitCompassHeading === "number") {
     // iOS: 이미 0~360, 시계방향=동쪽 규약.
     return event.webkitCompassHeading;
   }
-  // event.absolute가 true일 때만 alpha가 실제 자북 기준 방위다. false/누락이면
-  // "전원 켤 때 방향" 기준의 상대각일 뿐이라 나침반 값으로 쓸 수 없다 —
-  // 그럴듯한 숫자를 보여주는 대신 null을 반환해 "지원 안 됨"으로 처리한다.
-  if (event.absolute === true && typeof event.alpha === "number") {
+  // event.absolute가 true일 때만(또는 절대 방위 전용 이벤트로 들어왔을 때만) alpha가
+  // 실제 자북 기준 방위다. 그렇지 않으면 "전원 켤 때 방향" 기준의 상대각일 뿐이라
+  // 나침반 값으로 쓸 수 없다 — 그럴듯한 숫자를 보여주는 대신 null을 반환한다.
+  if ((trustAbsolute || event.absolute === true) && typeof event.alpha === "number") {
     // W3C 규약: alpha는 반시계 증가이므로 시계방향 규약으로 뒤집는다.
     return (360 - event.alpha) % 360;
   }
@@ -53,13 +56,13 @@ function normalizeAccuracy(event) {
   return null; // Android는 웹에 정확도를 노출하지 않음.
 }
 
-function buildReading(event) {
+function buildReading(event, trustAbsolute = false) {
   return {
-    heading: normalizeHeading(event),
+    heading: normalizeHeading(event, trustAbsolute),
     tilt: typeof event.gamma === "number" ? event.gamma : null,
     frontBack: typeof event.beta === "number" ? event.beta : null,
     accuracy: normalizeAccuracy(event),
-    isAbsolute: event.absolute === true || typeof event.webkitCompassHeading === "number",
+    isAbsolute: trustAbsolute || event.absolute === true || typeof event.webkitCompassHeading === "number",
   };
 }
 
@@ -72,11 +75,11 @@ export function startListening(onReading) {
   // 없으면(iOS 등) deviceorientation의 webkitCompassHeading으로 계속 동작한다.
   const relativeHandler = (event) => {
     if (absoluteEventSeen && typeof event.webkitCompassHeading !== "number") return;
-    onReading(buildReading(event));
+    onReading(buildReading(event, false));
   };
   const absoluteHandler = (event) => {
     absoluteEventSeen = true;
-    onReading(buildReading(event));
+    onReading(buildReading(event, true));
   };
 
   activeHandler = { relativeHandler, absoluteHandler };

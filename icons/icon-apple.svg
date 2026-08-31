@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <radialGradient id="bezel" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#e8c481"/>
+      <stop offset="55%" stop-color="#b8873f"/>
+      <stop offset="100%" stop-color="#7a5a26"/>
+    </radialGradient>
+  </defs>
+  <!-- iOS용: 배경을 각진 사각형으로 꽉 채워 완전 불투명하게 만든다 (iOS가 자체적으로 모서리를 둥글게 마스킹함). -->
+  <rect width="192" height="192" fill="#1a1712"/>
+  <circle cx="96" cy="96" r="74" fill="none" stroke="url(#bezel)" stroke-width="9"/>
+  <circle cx="96" cy="96" r="64" fill="#161209" stroke="#3a3226" stroke-width="1"/>
+  <text x="96" y="42" text-anchor="middle" fill="#e8c481" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="24">N</text>
+  <text x="34" y="103" text-anchor="middle" fill="#e8dcc4" font-family="Georgia, 'Times New Roman', serif" font-size="19">E</text>
+  <text x="96" y="162" text-anchor="middle" fill="#e8dcc4" font-family="Georgia, 'Times New Roman', serif" font-size="19">S</text>
+  <text x="158" y="103" text-anchor="middle" fill="#e8dcc4" font-family="Georgia, 'Times New Roman', serif" font-size="19">W</text>
+  <g transform="rotate(20 96 96)">
+    <polygon points="96,96 92,98 96,34 100,98" fill="#b23a2f"/>
+    <polygon points="96,96 92,94 96,158 100,94" fill="#e8dcc4" opacity="0.85"/>
+  </g>
+  <circle cx="96" cy="96" r="6" fill="#e8c481" stroke="#7a5a26" stroke-width="1"/>
+</svg>

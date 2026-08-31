@@ -28,6 +28,7 @@ body {
   font-family: var(--font-body);
   min-height: 100dvh;
   min-height: 100vh;
+  overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -36,7 +37,8 @@ body {
   min-height: 100dvh;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 14px 16px 20px;
+  padding: calc(14px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+    calc(20px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   text-align: center;
   background-image: radial-gradient(circle at 50% 0%, rgba(201, 163, 92, 0.07), transparent 55%);
 }
@@ -135,6 +137,10 @@ p.lead { color: var(--muted); line-height: 1.55; font-size: 0.92rem; }
 .compass-wrap svg {
   width: clamp(260px, 76vw, 344px);
   height: clamp(260px, 76vw, 344px);
+  /* clamp()의 260px 최저치보다 화면이 더 좁을 수 있는 극단적인 경우(초소형/폴더블 커버 화면)에도
+     넘치지 않도록 하는 안전장치. */
+  max-width: 92vw;
+  max-height: 92vw;
 }
 .compass-label {
   fill: var(--needle-tail);
