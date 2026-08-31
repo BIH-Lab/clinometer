@@ -58,8 +58,8 @@ const summaryDip = el("summary-dip");
 const BUBBLE_MAX_TILT = 30;
 // 방위(회전) 유지 확인 막대의 표시 범위(도). 이 이상 벗어나면 막대 끝까지 밀린 채로 표시된다.
 const YAW_MAX_DEVIATION = 30;
-// 방위 드리프트를 "문제 없음"으로 볼 허용 오차(도). 좌우/앞뒤 기울기보다는 나침반 잡음이 있어 조금 더 넉넉하게 잡는다.
-const YAW_TOLERANCE_DEG = 5;
+// 방위 드리프트를 "문제 없음"으로 볼 허용 오차(도). 앞뒤 기울기와 동일하게 맞춤.
+const YAW_TOLERANCE_DEG = 2;
 // 이 시간(ms) 동안 방위가 얼마나 변했는지를 "지금 회전 중인지"의 기준으로 삼는다.
 // 경사각(기울기) 크기와는 무관하게, 완만한 경사를 잴 때도 항상 똑같이 동작한다.
 const YAW_WINDOW_MS = 500;
